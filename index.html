@@ -2,157 +2,206 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>minsu chat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Chat</title>
 
 <style>
+/* ===== 전체 ===== */
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #f2f2f2;
   margin: 0;
-  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #eaeaea;
+  overscroll-behavior: none;
 }
 
-#app {
-  max-width: 500px;
-  margin: auto;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
+/* ===== 상단 ===== */
 header {
-  background: #222;
-  color: white;
-  padding: 14px;
-  text-align: center;
+  height: 56px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: bold;
+  border-bottom: 1px solid #ddd;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
+/* ===== 채팅 ===== */
 #chat {
-  flex: 1;
-  background: white;
-  padding: 10px;
+  padding: 12px;
+  height: calc(100vh - 112px);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
+/* ===== 메시지 ===== */
 .msg {
-  margin-bottom: 10px;
+  display: flex;
+  margin-bottom: 12px;
 }
 
-.me {
-  text-align: right;
+.msg.other {
+  justify-content: flex-start;
 }
 
-.name {
-  font-size: 12px;
-  color: #666;
+.msg.me {
+  justify-content: flex-end;
 }
 
 .bubble {
-  display: inline-block;
-  padding: 8px 12px;
-  border-radius: 12px;
-  background: #eaeaea;
-  max-width: 80%;
+  max-width: 72%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  font-size: 15px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.other .bubble {
+  background: #ffffff;
+  border-top-left-radius: 6px;
 }
 
 .me .bubble {
-  background: #cce5ff;
+  background: #ffe500;
+  border-top-right-radius: 6px;
 }
 
 .time {
   font-size: 11px;
-  color: #999;
+  color: #777;
+  margin-top: 4px;
 }
 
+/* ===== 입력 영역 ===== */
 #input-area {
+  position: fixed;
+  bottom: env(safe-area-inset-bottom);
+  left: 0;
+  width: 100%;
+  padding: 8px 10px;
+  background: #ffffff;
+  border-top: 1px solid #ddd;
   display: flex;
-  padding: 10px;
-  background: #eee;
+  align-items: center;
+  gap: 8px;
 }
 
-#input-area input {
+#msg {
   flex: 1;
-  padding: 10px;
-  border-radius: 20px;
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 999px; /* 반원 */
   border: 1px solid #ccc;
   outline: none;
+  font-size: 15px;
 }
 
-#input-area button {
-  margin-left: 8px;
-  padding: 10px 16px;
-  border-radius: 20px;
+/* ===== 전송 버튼 (원형) ===== */
+#sendBtn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
   border: none;
-  background: #222;
-  color: white;
+  background: #ffe500;
+  font-weight: bold;
   cursor: pointer;
+}
+
+/* ===== 닉네임 모달 ===== */
+#modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+#modal-box {
+  background: white;
+  padding: 20px;
+  border-radius: 14px;
+  width: 85%;
+  max-width: 320px;
+  text-align: center;
+}
+
+#modal-box h3 {
+  margin-top: 0;
+}
+
+#nicknameInput {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+#modal-box button {
+  margin-top: 14px;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: #ffe500;
+  font-weight: bold;
+  border-radius: 10px;
 }
 </style>
 </head>
 
 <body>
 
-<div id="app">
-  <header>Jaewon Chat</header>
+<header>채팅</header>
 
-  <div id="chat"></div>
+<div id="chat"></div>
 
-  <div id="input-area">
-    <input id="name" placeholder="닉네임" style="max-width:100px;margin-right:6px;">
-    <input id="msg" placeholder="메시지 입력">
-    <button onclick="send()">전송</button>
+<div id="input-area">
+  <input id="msg" placeholder="메시지 입력">
+  <button id="sendBtn" onclick="send()">➤</button>
+</div>
+
+<!-- 닉네임 모달 -->
+<div id="modal">
+  <div id="modal-box">
+    <h3>닉네임 입력</h3>
+    <input id="nicknameInput" placeholder="닉네임">
+    <button onclick="saveNickname()">확인</button>
   </div>
 </div>
 
 <script>
 const API = "https://jaewondev3.pythonanywhere.com";
-let myName = "";
-let lastLength = 0;
 
-function send() {
-  if (!myName) {
-    myName = document.getElementById("name").value.trim();
-    if (!myName) {
-      alert("닉네임을 입력하세요");
-      return;
-    }
-  }
+let myName = localStorage.getItem("nickname");
+let localMessages = JSON.parse(localStorage.getItem("messages") || "[]");
 
-  const msgInput = document.getElementById("msg");
-  const msg = msgInput.value.trim();
-  if (!msg) return;
-
-  fetch(API + "/send", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      name: myName,
-      msg: msg
-    })
-  });
-
-  msgInput.value = "";
+/* ===== 닉네임 ===== */
+if (myName) {
+  document.getElementById("modal").style.display = "none";
 }
 
-async function loadMessages() {
-  const res = await fetch(API + "/messages");
-  const msgs = await res.json();
-
-  if (msgs.length === lastLength) return;
-  lastLength = msgs.length;
-
+/* ===== 렌더 ===== */
+function render() {
   const chat = document.getElementById("chat");
   chat.innerHTML = "";
 
-  msgs.forEach(m => {
+  localMessages.forEach(m => {
     const div = document.createElement("div");
-    div.className = "msg" + (m.name === myName ? " me" : "");
+    div.className = "msg " + (m.name === myName ? "me" : "other");
     div.innerHTML = `
-      <div class="name">${m.name}</div>
-      <div class="bubble">${m.msg}</div>
-      <div class="time">${m.time}</div>
+      <div>
+        <div class="bubble">${m.msg}</div>
+        <div class="time">${m.name} · ${m.time}</div>
+      </div>
     `;
     chat.appendChild(div);
   });
@@ -160,7 +209,50 @@ async function loadMessages() {
   chat.scrollTop = chat.scrollHeight;
 }
 
+render();
+
+/* ===== 닉네임 저장 ===== */
+function saveNickname() {
+  const v = document.getElementById("nicknameInput").value.trim();
+  if (!v) return alert("닉네임을 입력하세요");
+  myName = v;
+  localStorage.setItem("nickname", myName);
+  document.getElementById("modal").style.display = "none";
+}
+
+/* ===== 전송 ===== */
+function send() {
+  const input = document.getElementById("msg");
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  fetch(API + "/send", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ name: myName, msg })
+  });
+
+  input.value = "";
+}
+
+/* ===== 서버 메시지 ===== */
+async function loadMessages() {
+  const res = await fetch(API + "/messages");
+  const msgs = await res.json();
+
+  if (msgs.length === localMessages.length) return;
+
+  localMessages = msgs;
+  localStorage.setItem("messages", JSON.stringify(localMessages));
+  render();
+}
+
 setInterval(loadMessages, 1000);
+
+/* ===== 엔터 전송 (모바일/PC) ===== */
+document.getElementById("msg").addEventListener("keydown", e => {
+  if (e.key === "Enter") send();
+});
 </script>
 
 </body>
