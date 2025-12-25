@@ -22,6 +22,11 @@
   @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
   #screen-container { width: 100%; height: 100%; position: relative; overflow: hidden; display: none; }
+  
+  /* PC 레이아웃 대응을 위한 수정 */
+  #main-layout { display: flex; width: 100%; height: 100%; }
+  #left-side { width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; border-right: 1px solid #eee; }
+  
   .home-header { height: 52px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; font-size: 20px; font-weight: 700; }
   .header-icons { display: flex; gap: 18px; }
   .icon { font-family: 'Material Symbols Outlined'; font-size: 26px; font-weight: 300; cursor: pointer; }
@@ -47,8 +52,14 @@
   .nav-item { display: flex; flex-direction: column; align-items: center; color: #bbb; cursor: pointer; width: 100%; }
   .nav-item.active { color: #333; }
   
+  /* 채팅창 기본 (모바일 중심) */
   #view-chat { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #b2c7d9; z-index: 200; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); visibility: hidden; }
   #view-chat.open { transform: translateX(0); visibility: visible; }
+  
+  /* PC 분할 뷰 플레이스홀더 */
+  #pc-placeholder { flex: 1; background: #f9f9f9; display: none; flex-direction: column; align-items: center; justify-content: center; color: #ccc; }
+  #pc-placeholder .material-symbols-outlined { font-size: 64px; margin-bottom: 10px; }
+
   .chat-header { height: 50px; background: rgba(255,255,255,0.95); display: flex; align-items: center; padding: 0 10px; border-bottom: 1px solid rgba(0,0,0,0.05); }
   .chat-msgs { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; touch-action: pan-y; }
   
@@ -70,7 +81,6 @@
   #input-area { background: #fff; padding: 10px 10px calc(10px + env(safe-area-inset-bottom)) 10px; display: flex; gap: 10px; align-items: center; }
   #msg-input { flex: 1; height: 38px; background: #f5f5f5; border: none; border-radius: 20px; padding: 0 16px; outline: none; }
   
-  /* 전송 버튼 수정 */
   #send-btn { width: 38px; height: 38px; background: #fef01b; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
   #send-btn:disabled { cursor: default; background: #eee; }
 
@@ -83,6 +93,16 @@
 
   .friend-select-list { max-height: 150px; overflow-y: auto; text-align: left; margin: 10px 0; border: 1px solid #eee; padding: 5px; }
   .friend-select-item { display: flex; align-items: center; gap: 10px; padding: 5px; }
+
+  /* PC 미디어 쿼리: 화면 너비가 768px 이상일 때 */
+  @media (min-width: 768px) {
+    #left-side { width: 380px; flex-shrink: 0; }
+    #view-chat { position: relative; transform: none; visibility: visible; display: none; z-index: 10; flex: 1; border-left: 1px solid #ddd; }
+    #view-chat.open { display: flex; }
+    #pc-placeholder { display: flex; }
+    #view-chat.open ~ #pc-placeholder { display: none; }
+    .chat-header .material-symbols-outlined[onclick="exitRoom()"] { display: none; } /* PC는 뒤로가기 숨김 */
+  }
 </style>
 </head>
 <body>
@@ -101,76 +121,85 @@
 </div>
 
 <div id="screen-container">
-  <div id="view-home" style="width:100%; height:100%; display:flex; flex-direction:column;">
-    <div class="home-header">
-      <span id="header-title">친구</span>
-      <div class="header-icons">
-        <span class="icon" onclick="openCreateChatModal()">add_circle</span>
-        <span class="icon">search</span>
-      </div>
-    </div>
+  <div id="main-layout">
+    <div id="left-side">
+      <div id="view-home" style="width:100%; height:100%; display:flex; flex-direction:column;">
+        <div class="home-header">
+          <span id="header-title">친구</span>
+          <div class="header-icons">
+            <span class="icon" onclick="openCreateChatModal()">add_circle</span>
+            <span class="icon">search</span>
+          </div>
+        </div>
 
-    <div id="tab-friends" class="tab-content">
-      <div class="my-info-card">
-        <div class="profile-thumb" id="my-profile-img">나</div>
-        <div class="text-area" style="margin-left:12px;">
-          <div class="name" id="my-name-display" style="font-size:16px;">나</div>
-          <div class="desc" id="my-status-display">상태메시지 입력 필요</div>
+        <div id="tab-friends" class="tab-content">
+          <div class="my-info-card">
+            <div class="profile-thumb" id="my-profile-img">나</div>
+            <div class="text-area" style="margin-left:12px;">
+              <div class="name" id="my-name-display" style="font-size:16px;">나</div>
+              <div class="desc" id="my-status-display">상태메시지 입력 필요</div>
+            </div>
+          </div>
+          <hr style="border:0; border-top:1px solid #f5f5f5; margin:0 0 10px 0;">
+          <div id="friends-list-container"></div>
+        </div>
+
+        <div id="tab-chats" class="tab-content hidden">
+          <div id="chat-list-container"></div>
+        </div>
+
+        <div id="tab-more" class="tab-content hidden">
+          <div class="my-info-card">
+            <div class="text-area">
+              <div class="name" style="font-size:18px; margin-bottom:5px;">더보기</div>
+              <div class="desc" id="more-email-display">user@email.com</div>
+            </div>
+          </div>
+          <div class="status-editor" id="status-edit-area" style="padding: 0 16px; display: none;">
+            <input id="new-status-input" class="login-input" style="width:100%; border-radius:8px; margin-bottom:8px;" placeholder="새 상태메시지 입력">
+            <div style="display:flex; gap:8px;">
+              <button class="modal-btn bg-y" style="margin:0;" onclick="saveStatus()">저장</button>
+              <button class="modal-btn bg-g" style="margin:0;" onclick="toggleStatusEditor()">취소</button>
+            </div>
+          </div>
+          <div class="more-menu">
+            <div class="menu-btn" onclick="toggleStatusEditor()"><span class="material-symbols-outlined menu-icon">edit_note</span><span class="menu-text">상태변경</span></div>
+            <div class="menu-btn" onclick="clearRoomHistory()"><span class="material-symbols-outlined menu-icon">delete_sweep</span><span class="menu-text">기록삭제</span></div>
+            <div class="menu-btn" onclick="exportChat()"><span class="material-symbols-outlined menu-icon">download</span><span class="menu-text">내보내기</span></div>
+            <div class="menu-btn" onclick="importChat()"><span class="material-symbols-outlined menu-icon">upload</span><span class="menu-text">가져오기</span></div>
+            <div class="menu-btn" onclick="logout()"><span class="material-symbols-outlined menu-icon" style="color:#d93025; background:#ffebeb;">logout</span><span class="menu-text" style="color:#d93025;">로그아웃</span></div>
+          </div>
+        </div>
+
+        <div class="bottom-nav">
+          <div class="nav-item active" onclick="switchTab('friends', this)"><span class="material-symbols-outlined" style="font-size:26px;">person</span></div>
+          <div class="nav-item" onclick="switchTab('chats', this)"><span class="material-symbols-outlined" style="font-size:24px;">chat_bubble</span></div>
+          <div class="nav-item" onclick="switchTab('more', this)"><span class="material-symbols-outlined" style="font-size:28px;">more_horiz</span></div>
         </div>
       </div>
-      <hr style="border:0; border-top:1px solid #f5f5f5; margin:0 0 10px 0;">
-      <div id="friends-list-container"></div>
     </div>
 
-    <div id="tab-chats" class="tab-content hidden">
-      <div id="chat-list-container"></div>
-    </div>
-
-    <div id="tab-more" class="tab-content hidden">
-      <div class="my-info-card">
-        <div class="text-area">
-          <div class="name" style="font-size:18px; margin-bottom:5px;">더보기</div>
-          <div class="desc" id="more-email-display">user@email.com</div>
-        </div>
-      </div>
-      <div class="status-editor" id="status-edit-area" style="padding: 0 16px; display: none;">
-        <input id="new-status-input" class="login-input" style="width:100%; border-radius:8px; margin-bottom:8px;" placeholder="새 상태메시지 입력">
-        <div style="display:flex; gap:8px;">
-          <button class="modal-btn bg-y" style="margin:0;" onclick="saveStatus()">저장</button>
-          <button class="modal-btn bg-g" style="margin:0;" onclick="toggleStatusEditor()">취소</button>
-        </div>
-      </div>
-      <div class="more-menu">
-        <div class="menu-btn" onclick="toggleStatusEditor()"><span class="material-symbols-outlined menu-icon">edit_note</span><span class="menu-text">상태변경</span></div>
-        <div class="menu-btn" onclick="clearRoomHistory()"><span class="material-symbols-outlined menu-icon">delete_sweep</span><span class="menu-text">기록삭제</span></div>
-        <div class="menu-btn" onclick="exportChat()"><span class="material-symbols-outlined menu-icon">download</span><span class="menu-text">내보내기</span></div>
-        <div class="menu-btn" onclick="importChat()"><span class="material-symbols-outlined menu-icon">upload</span><span class="menu-text">가져오기</span></div>
-        <div class="menu-btn" onclick="logout()"><span class="material-symbols-outlined menu-icon" style="color:#d93025; background:#ffebeb;">logout</span><span class="menu-text" style="color:#d93025;">로그아웃</span></div>
+    <div id="view-chat">
+      <header class="chat-header">
+        <span class="material-symbols-outlined" style="font-size:24px; padding:10px; cursor:pointer;" onclick="exitRoom()">arrow_back</span>
+        <div style="flex:1; font-weight:700; font-size:16px;" id="room-title">채팅방</div>
+        <span class="material-symbols-outlined" style="cursor:pointer; padding:10px;" onclick="openChatMenu()">menu</span>
+      </header>
+      <div id="chat-msgs" class="chat-msgs"></div>
+      <div id="input-area">
+        <input type="file" id="img-input" class="hidden" accept="image/*" onchange="sendImage(this)">
+        <span class="material-symbols-outlined" style="color:#bbb; cursor:pointer;" onclick="document.getElementById('img-input').click()">add</span>
+        <input id="msg-input" placeholder="메시지 입력">
+        <button id="send-btn" onclick="sendMsg()">
+          <span id="send-icon" class="material-symbols-outlined" style="font-size:20px;">arrow_upward</span>
+          <span id="send-loader" class="loader hidden" style="border-color:#333; border-bottom-color:transparent; width:16px; height:16px; border-width:2px;"></span>
+        </button>
       </div>
     </div>
 
-    <div class="bottom-nav">
-      <div class="nav-item active" onclick="switchTab('friends', this)"><span class="material-symbols-outlined" style="font-size:26px;">person</span></div>
-      <div class="nav-item" onclick="switchTab('chats', this)"><span class="material-symbols-outlined" style="font-size:24px;">chat_bubble</span></div>
-      <div class="nav-item" onclick="switchTab('more', this)"><span class="material-symbols-outlined" style="font-size:28px;">more_horiz</span></div>
-    </div>
-  </div>
-
-  <div id="view-chat">
-    <header class="chat-header">
-      <span class="material-symbols-outlined" style="font-size:24px; padding:10px; cursor:pointer;" onclick="exitRoom()">arrow_back</span>
-      <div style="flex:1; font-weight:700; font-size:16px;" id="room-title">채팅방</div>
-      <span class="material-symbols-outlined" style="cursor:pointer; padding:10px;" onclick="openChatMenu()">menu</span>
-    </header>
-    <div id="chat-msgs" class="chat-msgs"></div>
-    <div id="input-area">
-      <input type="file" id="img-input" class="hidden" accept="image/*" onchange="sendImage(this)">
-      <span class="material-symbols-outlined" style="color:#bbb; cursor:pointer;" onclick="document.getElementById('img-input').click()">add</span>
-      <input id="msg-input" placeholder="메시지 입력">
-      <button id="send-btn" onclick="sendMsg()">
-        <span id="send-icon" class="material-symbols-outlined" style="font-size:20px;">arrow_upward</span>
-        <span id="send-loader" class="loader hidden" style="border-color:#333; border-bottom-color:transparent; width:16px; height:16px; border-width:2px;"></span>
-      </button>
+    <div id="pc-placeholder">
+      <span class="material-symbols-outlined">chat_bubble</span>
+      <p>채팅을 시작해보세요</p>
     </div>
   </div>
 </div>
@@ -219,6 +248,11 @@
   const pastelColors = ["#FFB7B2", "#FFDAC1", "#E2F0CB", "#B5EAD7", "#C7CEEA", "#e4c1f9"];
   function getColor(s) { return pastelColors[s.length % pastelColors.length]; }
 
+  // 알림 권한 요청
+  if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+    Notification.requestPermission();
+  }
+
   if (myId) initApp();
 
   async function handleLogin() {
@@ -238,6 +272,7 @@
         myId = data.id; myName = data.name; myStatus = data.status; friendList = data.friendList;
         localStorage.setItem("myId", myId); localStorage.setItem("myName", myName);
         localStorage.setItem("myStatus", myStatus); localStorage.setItem("friendList", JSON.stringify(friendList));
+        if ("Notification" in window) Notification.requestPermission();
         initApp();
       } else { throw new Error(data.message); }
     } catch(err) {
@@ -251,6 +286,13 @@
     document.getElementById("screen-container").style.display = "block";
     updateMyInfoUI(); renderFriends(); renderChatList();
     listPollInterval = setInterval(syncRoomsFromServer, 2000);
+  }
+
+  // 알림 전송 함수
+  function sendPushNotification(title, body) {
+    if (Notification.permission === "granted") {
+      new Notification(title, { body: body, icon: 'https://cdn-icons-png.flaticon.com/512/733/733585.png' });
+    }
   }
 
   async function syncRoomsFromServer() {
@@ -268,8 +310,17 @@
           }
           myChatRooms.unshift({ id: sr.id, title, type: sr.id.split('_')[0], lastMsg: sr.lastMsg, lastReadCount: 0, creator: sr.creator, messages_count: sr.messages_count });
           changed = true;
+          // 새 방 알림 (내가 만든게 아닐 때)
+          if(sr.creator !== myName) sendPushNotification("새 채팅방", `${title} 방에 초대되었습니다.`);
         } else {
           if(local.messages_count !== sr.messages_count) {
+            // 메시지가 늘어났을 때 알림 처리
+            if(sr.messages_count > (local.messages_count || 0)) {
+               // 현재 그 방에 들어가 있지 않거나, 탭이 활성화 상태가 아닐 때 알림
+               if(currentRoomId !== sr.id || document.hidden) {
+                  sendPushNotification(local.title, sr.lastMsg || "새 메시지가 도착했습니다.");
+               }
+            }
             local.messages_count = sr.messages_count;
             local.lastMsg = sr.lastMsg;
             changed = true;
@@ -390,7 +441,6 @@
     if(isAtBottom) box.scrollTop = box.scrollHeight;
   }
 
-  // 메시지 전송 로딩 상태 처리 추가
   async function sendMsg() {
     const input = document.getElementById("msg-input");
     const btn = document.getElementById("send-btn");
@@ -399,7 +449,6 @@
     const msg = input.value.trim();
     if(!msg) return;
 
-    // 전송 시작: 아이콘 숨기고 로딩 표시 및 버튼 비활성화
     btn.disabled = true; icon.classList.add("hidden"); loader.classList.remove("hidden");
 
     try {
@@ -410,12 +459,10 @@
       input.value = ""; 
       loadMsgs();
     } finally {
-      // 전송 완료: 상태 복구
       btn.disabled = false; icon.classList.remove("hidden"); loader.classList.add("hidden");
     }
   }
 
-  // 이미지 전송 로딩 상태 처리 추가
   async function sendImage(input) {
     const file = input.files[0];
     const btn = document.getElementById("send-btn");
@@ -423,7 +470,6 @@
     const loader = document.getElementById("send-loader");
     if(!file) return;
 
-    // 전송 시작
     btn.disabled = true; icon.classList.add("hidden"); loader.classList.remove("hidden");
 
     const reader = new FileReader();
@@ -446,7 +492,6 @@
           });
           loadMsgs();
         } finally {
-          // 전송 완료
           btn.disabled = false; icon.classList.remove("hidden"); loader.classList.add("hidden");
         }
       };
