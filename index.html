@@ -11,18 +11,15 @@
   * { 
     box-sizing: border-box; 
     -webkit-tap-highlight-color: transparent; 
-    /* 가로 스크롤 및 불필요한 터치 제스처 방지 */
     touch-action: manipulation; 
   }
   
   html, body {
     margin: 0; padding: 0;
     width: 100%;
-    /* 100dvh로 브라우저 툴바 대응 */
     height: 100vh; height: 100dvh; 
-    /* 가로 스크롤 절대 금지 */
     overflow: hidden; 
-    position: fixed; /* 아이폰 바운스 스크롤 방지 */
+    position: fixed;
     font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
     background-color: #fff;
     font-size: 13px; color: #000;
@@ -62,7 +59,7 @@
   #screen-container { 
     width: 100%; height: 100%; 
     position: relative; 
-    overflow: hidden; /* 내부 요소가 가로로 삐져나오지 않게 함 */
+    overflow: hidden;
     display: none; 
   }
   
@@ -72,11 +69,10 @@
   
   .tab-content { 
     width: 100%;
-    height: calc(100% - 52px - 58px); /* 헤더와 네비 제외 영역 */
+    height: calc(100% - 52px - 58px); 
     overflow-y: auto; 
-    overflow-x: hidden; /* 탭 내부에서도 가로스크롤 차단 */
+    overflow-x: hidden; 
     padding-bottom: env(safe-area-inset-bottom);
-    /* 세로 스크롤만 허용하도록 터치 제어 */
     touch-action: pan-y; 
   }
 
@@ -120,23 +116,40 @@
   .nav-item { display: flex; flex-direction: column; align-items: center; color: #bbb; cursor: pointer; width: 100%; }
   .nav-item.active { color: #333; }
   
-  /* Chat Room - 스크롤에 걸리지 않도록 고정 */
+  /* ===== Chat Room (수정됨) ===== */
   #view-chat {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background-color: #b2c7d9; z-index: 200;
     display: flex; flex-direction: column;
     transform: translateX(100%); 
     transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-    visibility: hidden; /* 닫혀있을 때 브라우저가 인식하지 못하게 함 */
+    visibility: hidden;
   }
   #view-chat.open { transform: translateX(0); visibility: visible; }
-  .chat-header { height: 50px; background: rgba(255,255,255,0.95); display: flex; align-items: center; padding: 0 10px; }
-  .chat-msgs { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; touch-action: pan-y; }
-  .msg-row { display: flex; width: 100%; }
+  .chat-header { height: 50px; background: rgba(255,255,255,0.95); display: flex; align-items: center; padding: 0 10px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+  .chat-msgs { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; touch-action: pan-y; }
+  
+  .msg-row { display: flex; width: 100%; flex-shrink: 0; }
   .msg-row.me { justify-content: flex-end; }
-  .bubble { padding: 8px 12px; font-size: 14px; border-radius: 12px; max-width: 70%; word-break: break-all; }
-  .other .bubble { background: #fff; border-top-left-radius: 2px; }
-  .me .bubble { background: #fef01b; border-top-right-radius: 2px; }
+  .msg-row.other { justify-content: flex-start; }
+
+  .msg-content { display: flex; flex-direction: column; max-width: 75%; }
+  .me .msg-content { align-items: flex-end; } /* 내 메시지를 오른쪽 끝으로 정렬 */
+  .other .msg-content { align-items: flex-start; }
+
+  .bubble { 
+    padding: 8px 12px; 
+    font-size: 14px; 
+    border-radius: 12px; 
+    word-break: break-all; 
+    white-space: pre-wrap; /* 불필요한 줄바꿈 방지 및 줄바꿈 기호 유지 */
+    width: fit-content;    /* 텍스트 길이에 말풍선 맞춤 */
+    line-height: 1.4;
+    position: relative;
+    text-align: left;
+  }
+  .other .bubble { background: #fff; border-top-left-radius: 2px; color: #000; }
+  .me .bubble { background: #fef01b; border-top-right-radius: 2px; color: #000; }
   
   #input-area { 
     background: #fff; 
@@ -144,7 +157,7 @@
     display: flex; gap: 10px; align-items: center; 
   }
   #msg-input { flex: 1; height: 38px; background: #f5f5f5; border: none; border-radius: 20px; padding: 0 16px; outline: none; }
-  #send-btn { width: 38px; height: 38px; background: #fef01b; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; }
+  #send-btn { width: 38px; height: 38px; background: #fef01b; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
   /* Modal */
   .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none; align-items: center; justify-content: center; }
@@ -425,7 +438,7 @@
       div.className = `msg-row ${isMe ? 'me' : 'other'}`;
       div.innerHTML = `
         <div class="msg-content">
-          ${!isMe ? `<span style="font-size:11px; margin-bottom:2px; margin-left:2px; color:#666;">${m.name}</span>` : ''}
+          ${!isMe ? `<span style="font-size:11px; margin-bottom:4px; margin-left:2px; color:#666;">${m.name}</span>` : ''}
           <div class="bubble">${m.msg}</div>
         </div>
       `;
