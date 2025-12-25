@@ -2,258 +2,474 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Chat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>KakaoTalk Clone</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
 <style>
-/* ===== 전체 ===== */
-* {
-  box-sizing: border-box;
-}
+  /* ===== Reset & Base ===== */
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    background-color: #fff; /* 홈 화면은 흰색 */
+    height: 100vh; overflow: hidden;
+    font-size: 13px;
+    color: #000;
+  }
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #eaeaea;
-  overscroll-behavior: none;
-}
+  /* ===== Common Utilities ===== */
+  .hidden { display: none !important; }
+  .icon { font-family: 'Material Symbols Outlined'; font-size: 22px; user-select: none; }
+  .profile-thumb {
+    width: 42px; height: 42px; border-radius: 16px;
+    background-image: url('https://t1.kakaocdn.net/account_images/default_profile.jpeg.twg.thumb.R640x640');
+    background-size: cover; background-blend-mode: multiply;
+    background-color: #eee; flex-shrink: 0;
+  }
 
-/* ===== 상단 ===== */
-header {
-  height: 56px;
-  background: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  border-bottom: 1px solid #ddd;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
+  /* ===== Screen Container ===== */
+  #screen-container {
+    width: 100%; height: 100%; position: relative;
+  }
 
-/* ===== 채팅 ===== */
-#chat {
-  padding: 12px;
-  height: calc(100vh - 112px);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
+  /* ===== VIEW 1: HOME (Lobby) ===== */
+  #view-home {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    background: #fff;
+  }
 
-/* ===== 메시지 ===== */
-.msg {
-  display: flex;
-  margin-bottom: 12px;
-}
+  /* Home Header */
+  .home-header {
+    height: 50px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between;
+    font-size: 20px; font-weight: 700;
+  }
+  .header-icons { display: flex; gap: 16px; }
+  .header-icons .icon { cursor: pointer; }
 
-.msg.other {
-  justify-content: flex-start;
-}
+  /* Tab Content Area */
+  .tab-content {
+    flex: 1; overflow-y: auto; padding-bottom: 60px; /* 탭바 공간 */
+  }
 
-.msg.me {
-  justify-content: flex-end;
-}
+  /* Friend/Chat List Item */
+  .list-item {
+    display: flex; align-items: center; padding: 10px 16px;
+    cursor: pointer; transition: background 0.1s;
+  }
+  .list-item:active { background: #f2f2f2; }
+  .list-item .text-area { margin-left: 12px; display: flex; flex-direction: column; justify-content: center; flex: 1; }
+  .list-item .name { font-size: 14px; font-weight: 600; margin-bottom: 2px; color: #111; }
+  .list-item .desc { font-size: 11px; color: #888; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .list-item .meta { font-size: 10px; color: #bbb; }
 
-.bubble {
-  max-width: 72%;
-  padding: 10px 14px;
-  border-radius: 18px;
-  font-size: 15px;
-  line-height: 1.4;
-  word-break: break-word;
-}
+  /* Bottom Navigation */
+  .bottom-nav {
+    height: 56px; border-top: 1px solid #f1f1f1;
+    display: flex; align-items: center; justify-content: space-around;
+    background: #fff; padding-bottom: env(safe-area-inset-bottom);
+  }
+  .nav-item {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: #aaa; cursor: pointer; width: 100%; height: 100%;
+  }
+  .nav-item.active { color: #333; }
+  .nav-item .icon { font-size: 24px; margin-bottom: 2px; }
 
-.other .bubble {
-  background: #ffffff;
-  border-top-left-radius: 6px;
-}
+  /* ===== VIEW 2: CHAT ROOM ===== */
+  #view-chat {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: #b2c7d9; z-index: 200;
+    display: flex; flex-direction: column;
+    transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  #view-chat.open { transform: translateX(0); }
 
-.me .bubble {
-  background: #ffe500;
-  border-top-right-radius: 6px;
-}
+  /* Chat Header */
+  .chat-header {
+    height: 44px; background: rgba(255,255,255,0.95);
+    display: flex; align-items: center; padding: 0 10px;
+    border-bottom: 1px solid rgba(0,0,0,0.05); backdrop-filter: blur(5px);
+  }
+  .chat-header .back-btn { cursor: pointer; padding: 8px; font-size: 20px; color: #333; }
+  .chat-header .room-title { flex: 1; font-size: 15px; font-weight: 700; margin-left: 4px; }
+  .chat-header .room-meta { font-size: 12px; color: #888; font-weight: 400; margin-left: 4px; }
+  
+  /* Chat Search Bar (In-Room) */
+  #search-area {
+    background: #f2f2f2; padding: 8px 10px; display: none; border-bottom: 1px solid #ddd;
+  }
+  #search-area.active { display: flex; }
+  #search-input { width: 100%; padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 13px; outline: none; }
 
-.time {
-  font-size: 11px;
-  color: #777;
-  margin-top: 4px;
-}
+  /* Chat Messages Area */
+  #chat-msgs {
+    flex: 1; padding: 10px 12px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 10px;
+    padding-bottom: 10px;
+  }
+  #chat-msgs::-webkit-scrollbar { display: none; }
 
-/* ===== 입력 영역 ===== */
-#input-area {
-  position: fixed;
-  bottom: env(safe-area-inset-bottom);
-  left: 0;
-  width: 100%;
-  padding: 8px 10px;
-  background: #ffffff;
-  border-top: 1px solid #ddd;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+  /* Message Styling (Previous Code Integrated) */
+  .msg-row { display: flex; width: 100%; align-items: flex-start; }
+  .msg-row.me { justify-content: flex-end; }
+  .msg-content { display: flex; flex-direction: column; max-width: 72%; }
+  .name { font-size: 11px; color: #555; margin-bottom: 3px; margin-left: 2px; }
+  .bubble-wrapper { display: flex; align-items: flex-end; }
+  .me .bubble-wrapper { flex-direction: row-reverse; }
+  .bubble {
+    padding: 8px 12px; font-size: 13px; line-height: 1.4; word-break: break-all;
+    border-radius: 16px; box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+  }
+  .other .bubble { background: #ffffff; border-top-left-radius: 2px; }
+  .me .bubble { background: #fef01b; border-top-right-radius: 2px; }
+  .info { display: flex; flex-direction: column; justify-content: flex-end; margin: 0 4px; min-width: fit-content; }
+  .read-count { font-size: 9px; color: #d6a318; font-weight: bold; text-align: right; margin-bottom: 2px; }
+  .me .read-count { text-align: right; }
+  .other .read-count { text-align: left; }
+  .time { font-size: 9px; color: #555; white-space: nowrap; }
+  .highlight { background-color: #ffd700; color: #000; font-weight: bold; }
 
-#msg {
-  flex: 1;
-  height: 42px;
-  padding: 0 16px;
-  border-radius: 999px; /* 반원 */
-  border: 1px solid #ccc;
-  outline: none;
-  font-size: 15px;
-}
+  /* Chat Input */
+  #input-area {
+    background: #fff; padding: 8px; display: flex; align-items: center; gap: 8px;
+    border-top: 1px solid #ededed; padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+  #msg-input-field {
+    flex: 1; height: 34px; background: #f3f3f3; border: none; border-radius: 17px;
+    padding: 0 14px; font-size: 13px; outline: none;
+  }
+  #sendBtn {
+    width: 34px; height: 34px; background: #fef01b; border: none; border-radius: 50%;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
 
-/* ===== 전송 버튼 (원형) ===== */
-#sendBtn {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: none;
-  background: #ffe500;
-  font-weight: bold;
-  cursor: pointer;
-}
+  /* ===== Modals ===== */
+  .modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 999;
+    display: none; align-items: center; justify-content: center;
+  }
+  .modal-content {
+    background: #fff; padding: 20px; border-radius: 12px; width: 80%; max-width: 280px; text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  }
+  .modal-btn {
+    width: 100%; padding: 12px; margin-top: 8px; border: none; border-radius: 8px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .bg-yellow { background: #fef01b; color: #3b1e1e; }
+  .bg-gray { background: #f2f2f2; color: #333; }
 
-/* ===== 닉네임 모달 ===== */
-#modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 100;
-}
-
-#modal-box {
-  background: white;
-  padding: 20px;
-  border-radius: 14px;
-  width: 85%;
-  max-width: 320px;
-  text-align: center;
-}
-
-#modal-box h3 {
-  margin-top: 0;
-}
-
-#nicknameInput {
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-}
-
-#modal-box button {
-  margin-top: 14px;
-  width: 100%;
-  padding: 12px;
-  border: none;
-  background: #ffe500;
-  font-weight: bold;
-  border-radius: 10px;
-}
 </style>
 </head>
-
 <body>
 
-<header>채팅</header>
+<div id="screen-container">
 
-<div id="chat"></div>
+  <div id="view-home">
+    
+    <div class="home-header">
+      <span id="header-title">친구</span>
+      <div class="header-icons">
+        <span class="icon" onclick="openSearchModal()">search</span>
+        <span class="icon" onclick="openCreateChatModal()">add_circle</span> <span class="icon" onclick="openSettings()">settings</span>
+      </div>
+    </div>
 
-<div id="input-area">
-  <input id="msg" placeholder="메시지 입력">
-  <button id="sendBtn" onclick="send()">➤</button>
+    <div id="tab-friends" class="tab-content">
+      <div class="list-item" onclick="enterChat('나와의 채팅')">
+        <div class="profile-thumb" id="my-profile-img"></div>
+        <div class="text-area">
+          <div class="name" id="my-name-display">나</div>
+          <div class="desc">상태메시지를 입력하세요</div>
+        </div>
+      </div>
+      <hr style="border:0; border-top:1px solid #f5f5f5; margin:0;">
+      
+      <div style="padding:10px 16px; font-size:11px; color:#999;">친구 2</div>
+      
+      <div class="list-item" onclick="enterChat('김철수')">
+        <div class="profile-thumb" style="background-color:#FFB7B2"></div>
+        <div class="text-area">
+          <div class="name">김철수</div>
+          <div class="desc">오늘 점심 뭐 먹지?</div>
+        </div>
+      </div>
+      <div class="list-item" onclick="enterChat('이영희')">
+        <div class="profile-thumb" style="background-color:#B5EAD7"></div>
+        <div class="text-area">
+          <div class="name">이영희</div>
+          <div class="desc">휴가 중 ✈️</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-chats" class="tab-content hidden">
+      <div class="list-item" onclick="enterChat('오픈채팅방')">
+        <div class="profile-thumb" style="border-radius:14px; background:#ddd; display:flex; align-items:center; justify-content:center; font-size:20px;">💬</div>
+        <div class="text-area">
+          <div class="name">오픈채팅방</div>
+          <div class="desc" style="color:#666;">지금 대화에 참여해보세요!</div>
+        </div>
+        <div class="meta">방금</div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item active" onclick="switchTab('friends', this)">
+        <span class="icon">person</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('chats', this)">
+        <span class="icon">chat_bubble</span>
+      </div>
+      <div class="nav-item" onclick="alert('더보기 기능 준비중입니다.')">
+        <span class="icon">more_horiz</span>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="view-chat">
+    <header class="chat-header">
+      <span class="icon back-btn" onclick="exitChat()">arrow_back</span>
+      <div class="room-title" id="current-room-name">오픈채팅방</div>
+      <span class="room-meta">4</span>
+      <div style="flex:1;"></div>
+      <span class="icon" onclick="toggleInChatSearch()" style="font-size:20px; color:#333;">search</span>
+    </header>
+
+    <div id="search-area">
+      <input id="search-input" placeholder="대화 내용 검색..." oninput="onSearch(this.value)">
+    </div>
+
+    <div id="chat-msgs"></div>
+
+    <div id="input-area">
+      <span class="icon" style="color:#bbb; margin-right:4px;">add</span>
+      <input id="msg-input-field" placeholder="메시지 입력" autocomplete="off">
+      <button id="sendBtn" onclick="sendMsg()">
+        <span class="material-symbols-outlined" style="font-size:18px; font-weight:600;">arrow_upward</span>
+      </button>
+    </div>
+  </div>
+
 </div>
 
-<!-- 닉네임 모달 -->
-<div id="modal">
-  <div id="modal-box">
-    <h3>닉네임 입력</h3>
-    <input id="nicknameInput" placeholder="닉네임">
-    <button onclick="saveNickname()">확인</button>
+<div id="nickModal" class="modal" style="display: flex;">
+  <div class="modal-content">
+    <h3>시작하기</h3>
+    <input id="nicknameInput" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:6px;" placeholder="닉네임 입력">
+    <button class="modal-btn bg-yellow" onclick="saveNickname()">확인</button>
+  </div>
+</div>
+
+<div id="createChatModal" class="modal">
+  <div class="modal-content">
+    <h3>새로운 채팅</h3>
+    <button class="modal-btn bg-yellow" onclick="createNewChat('1:1 채팅')">1:1 채팅</button>
+    <button class="modal-btn bg-yellow" onclick="createNewChat('그룹 채팅')">그룹 채팅</button>
+    <button class="modal-btn bg-yellow" onclick="createNewChat('오픈 채팅')">오픈 채팅</button>
+    <button class="modal-btn bg-gray" onclick="closeModal('createChatModal')">취소</button>
+  </div>
+</div>
+
+<div id="settingsModal" class="modal">
+  <div class="modal-content">
+    <h3>설정</h3>
+    <p style="color:#666; font-size:12px; margin-bottom:15px;">앱 데이터를 초기화합니다.</p>
+    <button class="modal-btn" style="background:#ff4d4d; color:white;" onclick="resetApp()">초기화 (로그아웃)</button>
+    <button class="modal-btn bg-gray" onclick="closeModal('settingsModal')">닫기</button>
   </div>
 </div>
 
 <script>
-const API = "https://jaewondev3.pythonanywhere.com";
+  /* ===== Global State ===== */
+  const API_URL = "https://jaewondev3.pythonanywhere.com";
+  let myName = localStorage.getItem("nickname");
+  let allMessages = [];
+  let searchKeyword = "";
+  let isChatOpen = false; // 현재 채팅방에 들어왔는지 여부
 
-let myName = localStorage.getItem("nickname");
-let localMessages = JSON.parse(localStorage.getItem("messages") || "[]");
+  /* 파스텔 컬러 */
+  const pastelColors = ["#FFB7B2", "#FFDAC1", "#E2F0CB", "#B5EAD7", "#C7CEEA", "#e4c1f9", "#ffadad"];
+  function getColorFromName(name) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash += name.charCodeAt(i);
+    return pastelColors[hash % pastelColors.length];
+  }
 
-/* ===== 닉네임 ===== */
-if (myName) {
-  document.getElementById("modal").style.display = "none";
-}
+  /* ===== Init ===== */
+  if (myName) {
+    document.getElementById("nickModal").style.display = "none";
+    initHome();
+  }
 
-/* ===== 렌더 ===== */
-function render() {
-  const chat = document.getElementById("chat");
-  chat.innerHTML = "";
+  function saveNickname() {
+    const val = document.getElementById("nicknameInput").value.trim();
+    if (!val) return alert("닉네임을 입력하세요");
+    myName = val;
+    localStorage.setItem("nickname", myName);
+    document.getElementById("nickModal").style.display = "none";
+    initHome();
+  }
 
-  localMessages.forEach(m => {
-    const div = document.createElement("div");
-    div.className = "msg " + (m.name === myName ? "me" : "other");
-    div.innerHTML = `
-      <div>
-        <div class="bubble">${m.msg}</div>
-        <div class="time">${m.name} · ${m.time}</div>
-      </div>
-    `;
-    chat.appendChild(div);
+  function initHome() {
+    document.getElementById("my-name-display").innerText = myName;
+    document.getElementById("my-profile-img").style.backgroundColor = getColorFromName(myName);
+    loadMessages(); // 백그라운드에서 메시지 로드 시작
+  }
+
+  /* ===== Navigation Logic ===== */
+  function switchTab(tabName, el) {
+    // 탭 스타일 활성화
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+
+    // 컨텐츠 전환
+    document.getElementById('tab-friends').classList.add('hidden');
+    document.getElementById('tab-chats').classList.add('hidden');
+    
+    if(tabName === 'friends') {
+      document.getElementById('tab-friends').classList.remove('hidden');
+      document.getElementById('header-title').innerText = "친구";
+    } else {
+      document.getElementById('tab-chats').classList.remove('hidden');
+      document.getElementById('header-title').innerText = "채팅";
+    }
+  }
+
+  function enterChat(roomName) {
+    // 채팅방 열기
+    document.getElementById('current-room-name').innerText = roomName;
+    document.getElementById('view-chat').classList.add('open');
+    isChatOpen = true;
+    scrollToBottom();
+  }
+
+  function exitChat() {
+    // 채팅방 닫기 (홈으로 이동)
+    document.getElementById('view-chat').classList.remove('open');
+    isChatOpen = false;
+    // 검색창 닫기
+    document.getElementById("search-area").classList.remove("active");
+    searchKeyword = "";
+    document.getElementById("search-input").value = "";
+    renderMessages(allMessages); // 리셋
+  }
+
+  function openCreateChatModal() { document.getElementById('createChatModal').style.display = 'flex'; }
+  function createNewChat(type) {
+    closeModal('createChatModal');
+    // 실제로는 서버가 하나이므로, 이름만 바꿔서 입장
+    if (type === '1:1 채팅') enterChat('새로운 대화상대');
+    else if (type === '그룹 채팅') enterChat('그룹 채팅방 1');
+    else enterChat('오픈채팅방');
+  }
+
+  function openSettings() { document.getElementById('settingsModal').style.display = 'flex'; }
+  function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+  
+  function resetApp() {
+    localStorage.clear();
+    location.reload();
+  }
+
+  /* ===== Chat Logic ===== */
+  function toggleInChatSearch() {
+    const area = document.getElementById("search-area");
+    area.classList.toggle("active");
+    if (area.classList.contains("active")) document.getElementById("search-input").focus();
+    else {
+      searchKeyword = "";
+      renderMessages(allMessages);
+    }
+  }
+
+  function onSearch(val) {
+    searchKeyword = val.trim();
+    renderMessages(allMessages);
+  }
+
+  async function loadMessages() {
+    try {
+      const res = await fetch(API_URL + "/messages");
+      const msgs = await res.json();
+      if (JSON.stringify(msgs) !== JSON.stringify(allMessages)) {
+        allMessages = msgs;
+        renderMessages(allMessages);
+      }
+    } catch(e) { console.error(e); }
+  }
+  setInterval(loadMessages, 1000);
+
+  function renderMessages(messages) {
+    const chatBox = document.getElementById("chat-msgs");
+    // 스크롤이 바닥인지 체크 (채팅방이 열려있을 때만)
+    const isAtBottom = isChatOpen && (chatBox.scrollHeight - chatBox.scrollTop <= chatBox.clientHeight + 150);
+
+    chatBox.innerHTML = "";
+    
+    // 필터링
+    const displayList = messages.filter(m => !searchKeyword || m.msg.includes(searchKeyword));
+
+    displayList.forEach(m => {
+      const isMe = m.name.trim() === myName.trim();
+      const typeClass = isMe ? "me" : "other";
+      const profileColor = getColorFromName(m.name);
+      
+      let content = m.msg;
+      if(searchKeyword) content = content.replaceAll(searchKeyword, `<span class="highlight">${searchKeyword}</span>`);
+
+      const div = document.createElement("div");
+      div.className = `msg-row ${typeClass}`;
+      div.innerHTML = `
+        ${!isMe ? `<div class="profile-thumb" style="width:34px; height:34px; border-radius:13px; margin-right:8px; background-color:${profileColor}"></div>` : ''}
+        <div class="msg-content">
+          ${!isMe ? `<div class="name">${m.name}</div>` : ''}
+          <div class="bubble-wrapper">
+            <div class="bubble">${content}</div>
+            <div class="info">
+              <div class="read-count">1</div>
+              <div class="time">${m.time}</div>
+            </div>
+          </div>
+        </div>
+      `;
+      chatBox.appendChild(div);
+    });
+
+    if (isAtBottom && !searchKeyword) scrollToBottom();
+  }
+
+  function scrollToBottom() {
+    const chatBox = document.getElementById("chat-msgs");
+    setTimeout(() => chatBox.scrollTop = chatBox.scrollHeight, 50);
+  }
+
+  function sendMsg() {
+    const input = document.getElementById("msg-input-field");
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    fetch(API_URL + "/send", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ name: myName, msg })
+    }).then(() => loadMessages());
+
+    input.value = "";
+    input.focus();
+  }
+
+  document.getElementById("msg-input-field").addEventListener("keydown", e => {
+    if(e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMsg();
+    }
   });
 
-  chat.scrollTop = chat.scrollHeight;
-}
-
-render();
-
-/* ===== 닉네임 저장 ===== */
-function saveNickname() {
-  const v = document.getElementById("nicknameInput").value.trim();
-  if (!v) return alert("닉네임을 입력하세요");
-  myName = v;
-  localStorage.setItem("nickname", myName);
-  document.getElementById("modal").style.display = "none";
-}
-
-/* ===== 전송 ===== */
-function send() {
-  const input = document.getElementById("msg");
-  const msg = input.value.trim();
-  if (!msg) return;
-
-  fetch(API + "/send", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ name: myName, msg })
-  });
-
-  input.value = "";
-}
-
-/* ===== 서버 메시지 ===== */
-async function loadMessages() {
-  const res = await fetch(API + "/messages");
-  const msgs = await res.json();
-
-  if (msgs.length === localMessages.length) return;
-
-  localMessages = msgs;
-  localStorage.setItem("messages", JSON.stringify(localMessages));
-  render();
-}
-
-setInterval(loadMessages, 1000);
-
-/* ===== 엔터 전송 (모바일/PC) ===== */
-document.getElementById("msg").addEventListener("keydown", e => {
-  if (e.key === "Enter") send();
-});
 </script>
-
 </body>
 </html>
