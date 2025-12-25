@@ -1,154 +1,166 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8" />
-<title>MinsuTalk Beta</title>
-
-<!-- Parse SDK -->
-<script src="https://unpkg.com/parse/dist/parse.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>minsu talk>>ㅇtitle
 
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #f5f5f5;
-    padding: 20px;
-  }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f2f2f2;
+  margin: 0;
+  padding: 0;
+}
 
-  #chat {
-    background: #fff;
-    border: 1px solid #ccc;
-    height: 350px;
-    overflow-y: auto;
-    padding: 10px;
-    margin-bottom: 10px;
-  }
+#app {
+  max-width: 500px;
+  margin: auto;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 
-  .me {
-    text-align: right;
-    color: #0b57d0;
-    margin: 4px 0;
-  }
+header {
+  background: #222;
+  color: white;
+  padding: 14px;
+  text-align: center;
+  font-weight: bold;
+}
 
-  .you {
-    text-align: left;
-    color: #1a7f37;
-    margin: 4px 0;
-  }
+#chat {
+  flex: 1;
+  background: white;
+  padding: 10px;
+  overflow-y: auto;
+}
 
-  #inputBox {
-    display: flex;
-    gap: 5px;
-  }
+.msg {
+  margin-bottom: 10px;
+}
 
-  input {
-    flex: 1;
-    padding: 8px;
-    font-size: 14px;
-  }
+.me {
+  text-align: right;
+}
 
-  button {
-    padding: 8px 14px;
-    font-size: 14px;
-    cursor: pointer;
-  }
+.name {
+  font-size: 12px;
+  color: #666;
+}
+
+.bubble {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #eaeaea;
+  max-width: 80%;
+}
+
+.me .bubble {
+  background: #cce5ff;
+}
+
+.time {
+  font-size: 11px;
+  color: #999;
+}
+
+#input-area {
+  display: flex;
+  padding: 10px;
+  background: #eee;
+}
+
+#input-area input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  outline: none;
+}
+
+#input-area button {
+  margin-left: 8px;
+  padding: 10px 16px;
+  border-radius: 20px;
+  border: none;
+  background: #222;
+  color: white;
+  cursor: pointer;
+}
 </style>
 </head>
 
 <body>
 
-<h2>📩 Back4App 실시간 DM</h2>
+<div id="app">
+  <header>Jaewon Chat</header>
 
-<div id="chat"></div>
+  <div id="chat"></div>
 
-<div id="inputBox">
-  <input id="msg" placeholder="메시지 입력" />
-  <button onclick="sendMessage()">전송</button>
+  <div id="input-area">
+    <input id="name" placeholder="닉네임" style="max-width:100px;margin-right:6px;">
+    <input id="msg" placeholder="메시지 입력">
+    <button onclick="send()">전송</button>
+  </div>
 </div>
 
 <script>
-/* ===============================
-   🔧 Back4App 설정
-================================ */
-Parse.initialize(
-  "OJwaNo46f7slcN9dxPICTXgWINlwgZFyQA2klHy9", // App ID
-  "ex2lk9VFdrd0hN7KPWq3ydFGsLCTq1JV3HdaFHAO"  // JavaScript Key
-);
-Parse.serverURL = "https://parseapi.back4app.com";
+const API = "https://jaewondev3.pythonanywhere.com";
+let myName = "";
+let lastLength = 0;
 
-/* ===============================
-   👤 테스트용 유저 설정
-   (나중에 로그인으로 교체 가능)
-================================ */
-const myId = "userA";      // 나
-const targetId = "userB";  // 상대
+function send() {
+  if (!myName) {
+    myName = document.getElementById("name").value.trim();
+    if (!myName) {
+      alert("닉네임을 입력하세요");
+      return;
+    }
+  }
 
-/* DM 방 ID (항상 동일하게) */
-const roomId = [myId, targetId].sort().join("_");
+  const msgInput = document.getElementById("msg");
+  const msg = msgInput.value.trim();
+  if (!msg) return;
 
-/* ===============================
-   📦 Message 클래스
-================================ */
-const Message = Parse.Object.extend("Message");
-
-/* ===============================
-   📥 기존 메시지 불러오기
-================================ */
-const chatBox = document.getElementById("chat");
-
-const historyQuery = new Parse.Query(Message);
-historyQuery.equalTo("roomId", roomId);
-historyQuery.ascending("createdAt");
-historyQuery.limit(50);
-
-historyQuery.find().then(results => {
-  results.forEach(showMessage);
-  chatBox.scrollTop = chatBox.scrollHeight;
-});
-
-/* ===============================
-   ⚡ 실시간 수신 (Live Query)
-================================ */
-const liveQuery = new Parse.Query(Message);
-liveQuery.equalTo("roomId", roomId);
-
-liveQuery.subscribe().then(sub => {
-  sub.on("create", msg => {
-    showMessage(msg);
-    chatBox.scrollTop = chatBox.scrollHeight;
-  });
-});
-
-/* ===============================
-   📤 메시지 전송
-================================ */
-function sendMessage() {
-  const input = document.getElementById("msg");
-  const text = input.value.trim();
-  if (!text) return;
-
-  const message = new Message();
-  message.save({
-    roomId: roomId,
-    sender: myId,
-    text: text
+  fetch(API + "/send", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      name: myName,
+      msg: msg
+    })
   });
 
-  input.value = "";
+  msgInput.value = "";
 }
 
-/* ===============================
-   🖥 UI 출력
-================================ */
-function showMessage(msg) {
-  const div = document.createElement("div");
-  const sender = msg.get("sender");
-  const text = msg.get("text");
+async function loadMessages() {
+  const res = await fetch(API + "/messages");
+  const msgs = await res.json();
 
-  div.className = sender === myId ? "me" : "you";
-  div.textContent = sender + ": " + text;
+  if (msgs.length === lastLength) return;
+  lastLength = msgs.length;
 
-  chatBox.appendChild(div);
+  const chat = document.getElementById("chat");
+  chat.innerHTML = "";
+
+  msgs.forEach(m => {
+    const div = document.createElement("div");
+    div.className = "msg" + (m.name === myName ? " me" : "");
+    div.innerHTML = `
+      <div class="name">${m.name}</div>
+      <div class="bubble">${m.msg}</div>
+      <div class="time">${m.time}</div>
+    `;
+    chat.appendChild(div);
+  });
+
+  chat.scrollTop = chat.scrollHeight;
 }
+
+setInterval(loadMessages, 1000);
 </script>
 
 </body>
