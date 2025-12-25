@@ -7,12 +7,11 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0" />
 
 <style>
-  /* ===== 기존 스타일 유지 및 신규 스타일 추가 ===== */
+  /* ===== 기존 스타일 유지 및 UI 수정 ===== */
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
   html, body { margin: 0; padding: 0; width: 100%; height: 100vh; height: 100dvh; overflow: hidden; position: fixed; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; background-color: #fff; font-size: 13px; color: #000; }
   .hidden { display: none !important; }
 
-  /* 로그인 등 기존 스타일 */
   #view-login { width: 100%; height: 100%; background-color: #fef01b; display: flex; flex-direction: column; align-items: center; justify-content: center; position: absolute; z-index: 9999; top: 0; left: 0; }
   .login-logo { font-size: 80px; margin-bottom: 40px; color: #3b1e1e; }
   .login-form { width: 80%; max-width: 280px; display: flex; flex-direction: column; gap: 10px; }
@@ -33,7 +32,6 @@
   .tab-content { width: 100%; height: calc(100% - 52px - 58px); overflow-y: auto; overflow-x: hidden; padding-bottom: env(safe-area-inset-bottom); touch-action: pan-y; }
   .list-item { display: flex; align-items: center; padding: 12px 16px; cursor: pointer; position: relative; }
   
-  /* 프로필 이미지 스타일 수정: background-image 지원 */
   .profile-thumb { width: 44px; height: 44px; border-radius: 16px; background-color: #eee; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 600; color: rgba(0,0,0,0.5); font-size: 14px; margin-right: 12px; background-size: cover; background-position: center; border: 1px solid rgba(0,0,0,0.05); }
   
   .list-item .text-area { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
@@ -53,7 +51,6 @@
   .nav-item { display: flex; flex-direction: column; align-items: center; color: #bbb; cursor: pointer; width: 100%; }
   .nav-item.active { color: #333; }
   
-  /* 채팅창 */
   #view-chat { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #b2c7d9; z-index: 200; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); visibility: hidden; }
   #view-chat.open { transform: translateX(0); visibility: visible; }
   
@@ -63,40 +60,37 @@
   .chat-header { height: 50px; background: rgba(255,255,255,0.95); display: flex; align-items: center; padding: 0 10px; border-bottom: 1px solid rgba(0,0,0,0.05); }
   .chat-msgs { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; touch-action: pan-y; }
   
-  /* 채팅 메시지 레이아웃 수정 */
   .msg-row { display: flex; width: 100%; flex-shrink: 0; position: relative; }
   .msg-row.me { justify-content: flex-end; }
   .msg-row.other { justify-content: flex-start; align-items: flex-start; }
 
-  /* 채팅방 프로필 사진 */
-  .chat-profile-img { width: 36px; height: 36px; border-radius: 14px; margin-right: 8px; background-color: #eee; background-size: cover; background-position: center; flex-shrink: 0; cursor: pointer; display: none; }
-  .msg-row.other .chat-profile-img { display: block; }
+  /* [수정] 채팅방 프로필 사진 스타일 수정: 텍스트 중앙 정렬 추가 */
+  .chat-profile-img { width: 36px; height: 36px; border-radius: 14px; margin-right: 8px; background-color: #eee; background-size: cover; background-position: center; flex-shrink: 0; cursor: pointer; display: none; 
+      /* 중앙 정렬을 위한 Flex 추가 */
+      display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; color: rgba(0,0,0,0.5);
+  }
+  .msg-row.other .chat-profile-img { display: flex; } /* block 대신 flex */
 
   .msg-content { display: flex; flex-direction: column; max-width: 75%; }
   .me .msg-content { align-items: flex-end; }
   .other .msg-content { align-items: flex-start; }
 
-  /* 말풍선 스타일 및 링크 스타일 */
   .bubble { padding: 8px 12px; font-size: 14px; border-radius: 12px; word-break: break-all; white-space: pre-wrap; width: fit-content; line-height: 1.4; position: relative; text-align: left; }
   .other .bubble { background: #fff; border-top-left-radius: 2px; color: #000; }
   .me .bubble { background: #fef01b; border-top-right-radius: 2px; color: #000; cursor: pointer; }
   
-  /* 링크 스타일 지정 */
   .bubble a { color: #007bff; text-decoration: none; cursor: pointer; }
   .bubble a:hover { text-decoration: underline; }
 
-  /* 링크 미리보기 카드 */
   .link-preview { display: block; margin-top: 8px; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid rgba(0,0,0,0.1); max-width: 240px; text-decoration: none; color: inherit !important; cursor: pointer; }
   .link-preview img { width: 100%; height: 120px; object-fit: cover; display: block; }
   .preview-txt { padding: 10px; }
   .preview-title { font-weight: bold; font-size: 13px; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #000; }
   .preview-desc { font-size: 11px; color: #666; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-  /* 읽음 확인 숫자 */
   .read-container { display: flex; align-items: flex-end; }
   .me .read-container { flex-direction: row-reverse; }
   .read-count { font-size: 10px; color: #fef01b; margin: 0 4px; font-weight: bold; text-shadow: 0 0 2px rgba(0,0,0,0.1); }
-  /* 노란 말풍선 옆은 글씨가 안보일 수 있으니 색 조정 */
   .me .read-count { color: #555; } 
   .msg-time { font-size: 9px; color: #555; margin: 0 4px; min-width: max-content; }
 
@@ -118,8 +112,13 @@
 
   .friend-select-list { max-height: 150px; overflow-y: auto; text-align: left; margin: 10px 0; border: 1px solid #eee; padding: 5px; }
   .friend-select-item { display: flex; align-items: center; gap: 10px; padding: 5px; }
+  
+  /* 이미지 편집용 Canvas 스타일 */
+  .crop-container { width: 200px; height: 200px; overflow: hidden; margin: 0 auto; border: 1px solid #ddd; border-radius: 50%; position: relative; background: #000; }
+  canvas#crop-canvas { cursor: move; }
+  .slider-container { margin: 15px 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  input[type=range] { width: 80%; }
 
-  /* PC 미디어 쿼리 */
   @media (min-width: 768px) {
     #left-side { width: 380px; flex-shrink: 0; }
     #view-chat { position: relative; transform: none; visibility: visible; display: none; z-index: 10; flex: 1; border-left: 1px solid #ddd; }
@@ -261,30 +260,46 @@
 <div id="profileEditModal" class="modal">
   <div class="modal-box">
     <h3>프로필 사진 변경</h3>
-    <div id="profile-edit-preview" style="width:100px; height:100px; border-radius:30px; background:#eee; margin:20px auto; background-size:cover; background-position:center;"></div>
+    <div class="crop-container">
+        <canvas id="crop-canvas" width="200" height="200"></canvas>
+    </div>
+    <div class="slider-container">
+        <span class="material-symbols-outlined" style="font-size:16px;">remove</span>
+        <input type="range" id="zoom-slider" min="1" max="3" step="0.1" value="1" oninput="handleImageZoom(this.value)">
+        <span class="material-symbols-outlined" style="font-size:16px;">add</span>
+    </div>
+    
     <button class="modal-btn bg-y" onclick="document.getElementById('profile-file-input').click()">사진 선택</button>
+    <button class="modal-btn bg-y" onclick="saveProfileImage()">저장</button>
     <button class="modal-btn bg-g" onclick="deleteProfileImage()">기본 이미지로 변경</button>
     <button class="modal-btn bg-g" style="margin-top:15px; border-top:1px solid #eee;" onclick="closeModal('profileEditModal')">닫기</button>
   </div>
 </div>
 
 <input type="file" id="file-input" class="hidden" accept=".json" onchange="handleFileImport(this)">
-<input type="file" id="profile-file-input" class="hidden" accept="image/*" onchange="handleProfileUpload(this)">
+<input type="file" id="profile-file-input" class="hidden" accept="image/*" onchange="handleProfileSelect(this)">
 
 <script>
-  // API URL 설정 (본인 환경에 맞게 수정)
   const API_URL = "https://jaewondev3.pythonanywhere.com";
   
   let myId = localStorage.getItem("myId");
   let myName = localStorage.getItem("myName");
   let myStatus = localStorage.getItem("myStatus") || "";
-  let myProfileImg = localStorage.getItem("myProfileImg") || ""; // 내 프사
+  let myProfileImg = localStorage.getItem("myProfileImg") || ""; 
   let friendList = JSON.parse(localStorage.getItem("friendList") || "[]");
   let myChatRooms = JSON.parse(localStorage.getItem("myChatRooms") || "[]");
   let currentRoomId = null;
   let chatPollInterval = null;
   let listPollInterval = null;
   let selectedMsgId = null;
+
+  // 편집용 변수
+  let cropImg = new Image();
+  let cropScale = 1;
+  let cropOffsetX = 0;
+  let cropOffsetY = 0;
+  let isDragging = false;
+  let startX, startY;
 
   const pastelColors = ["#FFB7B2", "#FFDAC1", "#E2F0CB", "#B5EAD7", "#C7CEEA", "#e4c1f9"];
   function getColor(s) { return pastelColors[(s || "").length % pastelColors.length]; }
@@ -331,7 +346,14 @@
     document.getElementById("view-login").style.display = "none";
     document.getElementById("screen-container").style.display = "block";
     updateMyInfoUI(); renderFriends(); renderChatList();
-    listPollInterval = setInterval(syncRoomsFromServer, 2000);
+    
+    // 룸 동기화 및 친구 목록 동기화
+    listPollInterval = setInterval(() => {
+        syncRoomsFromServer();
+        syncFriends();
+    }, 2000);
+    
+    initCanvasEvents();
   }
 
   function sendPushNotification(title, body) {
@@ -376,6 +398,22 @@
     } catch(e) {}
   }
 
+  // [신규] 친구 목록(프사 포함) 동기화 함수
+  async function syncFriends() {
+      try {
+          const res = await fetch(`${API_URL}/get-friend-list?id=${myId}`);
+          const newList = await res.json();
+          // 변경사항 확인 (단순화: JSON 문자열 비교)
+          if(JSON.stringify(friendList) !== JSON.stringify(newList)) {
+              friendList = newList;
+              localStorage.setItem("friendList", JSON.stringify(friendList));
+              renderFriends(); // 친구목록 갱신
+              renderChatList(); // 채팅목록 프사 갱신
+              if(currentRoomId) loadMsgs(); // 채팅창 내부 프사 갱신
+          }
+      } catch(e) {}
+  }
+
   function setProfileImg(elId, imgData, fallbackName) {
     const el = document.getElementById(elId);
     if (!el) return;
@@ -395,7 +433,6 @@
     document.getElementById("my-status-display").innerText = myStatus || "상태메시지 없음";
     document.getElementById("more-email-display").innerText = myId + "@mintalk.kro.kr";
     
-    // 내 프로필 이미지 적용
     setProfileImg("my-profile-img", myProfileImg, myName);
     setProfileImg("more-profile-img", myProfileImg, myName);
   }
@@ -447,7 +484,6 @@
       const isPrivate = room.type === 'private';
       const iconChar = isPrivate ? (room.title ? room.title[0] : '?') : '📢';
       
-      // 친구 프사 찾기
       let roomImg = null;
       if(isPrivate) {
          const friend = friendList.find(f => room.id.includes(f.id));
@@ -485,7 +521,6 @@
       const res = await fetch(`${API_URL}/messages?room=${currentRoomId}`);
       const msgs = await res.json();
       
-      // 읽음 처리 요청
       await fetch(`${API_URL}/mark-read`, {
           method: "POST", headers: {"Content-Type":"application/json"},
           body: JSON.stringify({ room: currentRoomId, id: myId })
@@ -497,7 +532,6 @@
     } catch(e) {}
   }
 
-  // URL을 감지하여 <a> 태그로 변환
   function linkify(text) {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     return text.replace(urlRegex, function(url) {
@@ -509,7 +543,6 @@
     const box = document.getElementById("chat-msgs");
     const isAtBottom = box.scrollHeight - box.scrollTop <= box.clientHeight + 100;
     
-    // 현재 DOM과 비교하여 변경사항만 반영하는 것이 최선이나, 간단하게 innerHTML 초기화 유지
     box.innerHTML = "";
     
     msgs.forEach(m => {
@@ -517,30 +550,18 @@
       const div = document.createElement("div");
       div.className = `msg-row ${isMe ? 'me' : 'other'}`;
       
-      // 상대방 프사 찾기
       let senderImg = "";
       if(!isMe) {
-          const friend = friendList.find(f => f.name === m.name); // 이름으로 찾기 (ID가 확실하면 ID로)
+          const friend = friendList.find(f => f.name === m.name);
           if(friend && friend.profile_img) senderImg = `background-image:url(${friend.profile_img}); background-color:transparent;`;
           else senderImg = `background-color:${getColor(m.name)}`;
       }
 
-      // 읽음 숫자 계산 (전체 인원 - 읽은 사람 수)
-      // 단체방 인원을 정확히 알 수 없으니 여기서는 "읽은 사람 수"를 표시하거나 "안읽음" 표시
-      // 요청사항: "읽었는지 안읽었는지 표시".
-      // 간단히: 읽은 사람 수(read_by.length)가 2명(1:1)이면 '읽음', 아니면 '1'
-      // 더 정확히: 나와 상대방(2명 기준)일 때, read_by에 상대방이 없으면 '1', 있으면 공백
       let readCountDisplay = "";
-      if (m.read_by) {
-          // 내가 쓴 글: 상대방이 읽었는지 (read_by에 나 말고 다른 사람이 있는지)
-          if(isMe) {
-             if (m.read_by.length < 2) readCountDisplay = "1"; // 아무도 안읽음 (나만 읽음)
-          } else {
-             // 남이 쓴 글: 내가 읽었는지는 이미 mark-read했으므로 의미 없고 UI상 안보여도 됨
-          }
+      if (m.read_by && isMe) {
+          if (m.read_by.length < 2) readCountDisplay = "1";
       }
 
-      // 본문 처리 (링크 변환)
       let contentHtml = "";
       if (m.image) {
           contentHtml = `<img src="${m.image}" class="img-msg" onclick="${isMe ? `openMsgMenu('${m.id}', true)` : ''}">`;
@@ -548,7 +569,6 @@
           contentHtml = `<div class="bubble" onclick="${isMe ? `openMsgMenu('${m.id}', false)` : ''}">${linkify(m.msg)}</div>`;
       }
       
-      // 링크 미리보기 카드 (본문에 링크가 있고, preview 데이터가 있는 경우)
       if(m.preview) {
           contentHtml += `
             <a href="${m.preview.url}" target="_blank" class="link-preview">
@@ -563,7 +583,7 @@
 
       if(m.edited) contentHtml += `<span class="edit-tag">수정됨</span>`;
 
-      // HTML 조립
+      // [수정] chat-profile-img에 텍스트 중앙정렬 CSS 적용됨
       div.innerHTML = `
         ${!isMe ? `<div class="chat-profile-img" style="${senderImg}">${senderImg.includes('url')?'':m.name[0]}</div>` : ''}
         <div class="msg-content">
@@ -727,55 +747,122 @@
     enterRoom(roomId, friendName, 'private');
   }
 
-  // --- 프로필 사진 관련 함수 ---
+  // --- 프로필 사진 Canvas 편집 로직 ---
   function openProfileEdit() {
-      setProfileImg("profile-edit-preview", myProfileImg, myName);
+      // 캔버스 초기화
+      const cvs = document.getElementById("crop-canvas");
+      const ctx = cvs.getContext("2d");
+      ctx.clearRect(0, 0, cvs.width, cvs.height);
+      ctx.fillStyle = "#eee";
+      ctx.fillRect(0,0, cvs.width, cvs.height);
+      
+      // 내 현재 이미지가 있으면 로드
+      if(myProfileImg) {
+          cropImg.src = myProfileImg;
+          cropImg.onload = () => {
+              cropScale = 1; cropOffsetX = 0; cropOffsetY = 0;
+              document.getElementById("zoom-slider").value = 1;
+              drawCropCanvas();
+          }
+      }
       document.getElementById("profileEditModal").style.display = "flex";
   }
 
-  function handleProfileUpload(input) {
+  // [수정] 파일 선택 시 이미지 크기에 맞춰 초기 배율을 계산하는 로직 추가
+function handleProfileSelect(input) {
     const file = input.files[0];
     if(!file) return;
-    
-    // 이미지 압축 및 리사이징 (렉 방지)
     const reader = new FileReader();
     reader.onload = function(e) {
-      const img = new Image();
-      img.onload = async function() {
-        const canvas = document.createElement('canvas');
-        // 프로필용으로 300px 정사각형 crop에 가깝게 리사이징
-        let size = 300;
-        let width = img.width, height = img.height;
-        
-        // 중앙 크롭을 위한 계산
-        let sx, sy, sWidth, sHeight;
-        if(width > height) {
-            sHeight = height; sWidth = height; sx = (width - height) / 2; sy = 0;
-        } else {
-            sWidth = width; sHeight = width; sx = 0; sy = (height - width) / 2;
+        cropImg = new Image();
+        cropImg.onload = function() {
+            const cvs = document.getElementById("crop-canvas");
+            
+            // 캔버스에 이미지가 꽉 차도록 초기 배율(Base Scale) 계산
+            const scaleX = cvs.width / cropImg.width;
+            const scaleY = cvs.height / cropImg.height;
+            
+            // 이미지가 캔버스보다 작으면 1, 크면 캔버스에 맞게 축소된 값을 기본값으로 설정
+            const baseScale = Math.max(scaleX, scaleY); 
+            
+            cropScale = baseScale; 
+            cropOffsetX = 0; 
+            cropOffsetY = 0;
+            
+            // 슬라이더의 최소값을 baseScale로 설정하여 더 작게 조절 가능하게 함
+            const slider = document.getElementById("zoom-slider");
+            slider.min = baseScale * 0.5; // 최소 배율 (더 작게 보기도 가능)
+            slider.max = baseScale * 5;   // 최대 배율
+            slider.value = baseScale;
+            
+            drawCropCanvas();
         }
-        
-        canvas.width = size; canvas.height = size;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, size, size);
-        
-        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-        
-        // 서버 전송
-        await fetch(API_URL + "/update-profile-img", {
-            method: "POST", headers: {"Content-Type":"application/json"},
-            body: JSON.stringify({ id: myId, image: compressedBase64 })
-        });
-        
-        myProfileImg = compressedBase64;
-        localStorage.setItem("myProfileImg", myProfileImg);
-        updateMyInfoUI();
-        closeModal("profileEditModal");
-      };
-      img.src = e.target.result;
+        cropImg.src = e.target.result;
     };
     reader.readAsDataURL(file);
     input.value = "";
+}
+
+// [수정] 드로잉 로직은 동일하게 유지하되, 배율이 적용된 크기를 정확히 반영
+function drawCropCanvas() {
+    const cvs = document.getElementById("crop-canvas");
+    const ctx = cvs.getContext("2d");
+    if (!cropImg.src) return;
+
+    ctx.clearRect(0, 0, cvs.width, cvs.height);
+    
+    // 현재 배율이 적용된 이미지 크기
+    const sWidth = cropImg.width * cropScale;
+    const sHeight = cropImg.height * cropScale;
+    
+    // 캔버스 중앙을 기준으로 배치
+    const x = (cvs.width - sWidth) / 2 + cropOffsetX;
+    const y = (cvs.height - sHeight) / 2 + cropOffsetY;
+    
+    ctx.drawImage(cropImg, x, y, sWidth, sHeight);
+}
+
+  function handleImageZoom(val) {
+      cropScale = parseFloat(val);
+      drawCropCanvas();
+  }
+
+  function initCanvasEvents() {
+      const cvs = document.getElementById("crop-canvas");
+      
+      const startDrag = (x, y) => { isDragging = true; startX = x; startY = y; };
+      const moveDrag = (x, y) => {
+          if(!isDragging) return;
+          cropOffsetX += x - startX;
+          cropOffsetY += y - startY;
+          startX = x; startY = y;
+          drawCropCanvas();
+      };
+      const endDrag = () => { isDragging = false; };
+
+      cvs.addEventListener("mousedown", e => startDrag(e.clientX, e.clientY));
+      cvs.addEventListener("mousemove", e => moveDrag(e.clientX, e.clientY));
+      window.addEventListener("mouseup", endDrag);
+      
+      // 모바일 터치 지원
+      cvs.addEventListener("touchstart", e => startDrag(e.touches[0].clientX, e.touches[0].clientY), {passive:false});
+      cvs.addEventListener("touchmove", e => { e.preventDefault(); moveDrag(e.touches[0].clientX, e.touches[0].clientY); }, {passive:false});
+      window.addEventListener("touchend", endDrag);
+  }
+
+  async function saveProfileImage() {
+      const cvs = document.getElementById("crop-canvas");
+      const compressedBase64 = cvs.toDataURL('image/jpeg', 0.7);
+
+      await fetch(API_URL + "/update-profile-img", {
+            method: "POST", headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ id: myId, image: compressedBase64 })
+      });
+      
+      myProfileImg = compressedBase64;
+      localStorage.setItem("myProfileImg", myProfileImg);
+      updateMyInfoUI();
+      closeModal("profileEditModal");
   }
 
   async function deleteProfileImage() {
@@ -789,6 +876,7 @@
       updateMyInfoUI();
       closeModal("profileEditModal");
   }
+  
   // ---------------------------
 
   document.getElementById("msg-input").addEventListener("keydown", e=>{ if(e.key==="Enter") sendMsg(); });
