@@ -17,7 +17,17 @@
   .hidden { display: none !important; }
 
   #view-login { width: 100%; height: 100%; background-color: #fef01b; display: flex; flex-direction: column; align-items: center; justify-content: center; position: absolute; z-index: 9999; top: 0; left: 0; }
-  .login-logo { font-size: 80px; margin-bottom: 40px; color: #3b1e1e; }
+  
+  /* 로그인 로고 이미지 교체 및 색상 적용 */
+  .login-logo-img { 
+    width: 80px; 
+    height: 80px; 
+    margin-bottom: 40px; 
+    background-color: #3b1e1e; /* 아이콘 색상 */
+    -webkit-mask: url('https://i.postimg.cc/X7hwLjRr/image-removebg-preview-(1).png') no-repeat center / contain;
+    mask: url('https://i.postimg.cc/X7hwLjRr/image-removebg-preview-(1).png') no-repeat center / contain;
+  }
+
   .login-form { width: 80%; max-width: 280px; display: flex; flex-direction: column; gap: 10px; }
   .login-input { padding: 14px 20px; border: 1px solid #ddd; border-radius: 25px; font-size: 14px; outline: none; background: #fff; }
   .login-btn { padding: 14px; background: #3b1e1e; color: #fff; border: none; border-radius: 50px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 15px; height: 48px; display: flex; align-items: center; justify-content: center; }
@@ -26,7 +36,10 @@
   @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
   #screen-container { width: 100%; height: 100%; position: relative; overflow: hidden; display: none; }
-  #main-layout { display: flex; width: 100%; height: 100%; }
+  
+  /* 모바일 여백 추가 */
+  #main-layout { display: flex; width: 100%; height: 100%; padding: 0 10px; background: #fff; }
+  
   #left-side { width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; border-right: 1px solid #eee; }
   
   .home-header { height: 52px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; font-size: 20px; font-weight: 700; }
@@ -54,6 +67,16 @@
   .bottom-nav { height: calc(58px + env(safe-area-inset-bottom)); border-top: 1px solid #f1f1f1; display: flex; align-items: flex-start; justify-content: space-around; background: #fff; padding-top: 10px; padding-bottom: env(safe-area-inset-bottom); position: absolute; bottom: 0; width: 100%; z-index: 100; }
   .nav-item { display: flex; flex-direction: column; align-items: center; color: #bbb; cursor: pointer; width: 100%; }
   .nav-item.active { color: #333; }
+  
+  /* 하단 탭 아이콘 스타일 (이미지 마스킹) */
+  .nav-icon-custom {
+      width: 24px; height: 24px;
+      background-color: #bbb;
+      -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;
+      mask-size: contain; mask-repeat: no-repeat; mask-position: center;
+      transition: background-color 0.2s;
+  }
+  .nav-item.active .nav-icon-custom { background-color: #333; }
   
   /* 채팅 화면 배경 흰색으로 변경 */
   #view-chat { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #fff; z-index: 200; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), visibility 0s 0.3s; visibility: hidden; }
@@ -105,7 +128,8 @@
   .me .read-count { color: #3b82f6; } 
   .msg-time { font-size: 10px; color: #999; margin: 0 4px; min-width: max-content; }
 
-  .img-msg { max-width: 200px; border-radius: 16px; margin-top: 5px; display: block; cursor: pointer; }
+  /* 이미지 모서리 둥글게 (20px) */
+  .img-msg { max-width: 200px; border-radius: 20px; margin-top: 5px; display: block; cursor: pointer; }
   .edit-tag { font-size: 9px; color: rgba(0,0,0,0.4); margin-top: 2px; }
 
   /* 입력창 영역 스타일 재정의 (요청사항 반영) */
@@ -120,18 +144,27 @@
   .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; cursor: pointer; color: #333; font-size: 14px; }
   .plus-menu-item:hover { background: #f5f5f5; }
 
-  /* 메시지 입력 박스 */
-  #msg-input-container { flex: 1; background: #f0f0f0; border-radius: 20px; display: flex; align-items: center; padding: 0 15px; height: 40px; }
+  /* 메시지 입력 박스 (높이 32px로 플러스 버튼과 동일하게 맞춤) */
+  #msg-input-container { flex: 1; background: #f0f0f0; border-radius: 20px; display: flex; align-items: center; padding: 0 15px; height: 32px; }
   #msg-input { flex: 1; background: transparent; border: none; outline: none; font-size: 15px; padding: 0; color: #000; height: 100%; margin: 0; }
   
   /* 녹음/전송 버튼 영역 */
   #action-btn-area { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; }
-  #mic-icon { color: #555; font-size: 24px; }
+  
+  /* 녹음 아이콘 (세로 막대 스타일) */
+  #mic-icon { display: flex; align-items: center; justify-content: center; gap: 2px; height: 100%; }
+  .bar { width: 3px; background-color: #555; border-radius: 2px; }
+  .bar:nth-child(1) { height: 8px; }
+  .bar:nth-child(2) { height: 16px; }
+  .bar:nth-child(3) { height: 10px; }
+  .bar:nth-child(4) { height: 14px; }
+  .bar:nth-child(5) { height: 6px; }
+
   #send-btn { display: none; width: 32px; height: 32px; background: #3b82f6; border-radius: 50%; border: none; align-items: center; justify-content: center; color: #fff; cursor: pointer; }
   #send-btn:disabled { background: #ccc; cursor: default; }
   
-  /* 모달 기본 스타일 */
-  .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; }
+  /* 모달 기본 스타일 (z-index 3000으로 올려서 이미지 뷰어보다 앞에 나오게 함, 딜레이 단축) */
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 3000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.1s ease; }
   .modal.show { opacity: 1; display: flex; }
   .modal-box { background: #fff; width: 85%; max-width: 300px; padding: 20px; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
   
@@ -217,7 +250,7 @@
 </div>
 
 <div id="view-login">
-  <span class="material-symbols-outlined login-logo">chat_bubble</span>
+  <div class="login-logo-img"></div>
   <div class="login-form">
     <input id="login-id" class="login-input" placeholder="아이디" autocomplete="off" lang="ko">
     <input id="login-pw" type="password" class="login-input" placeholder="비밀번호">
@@ -283,8 +316,12 @@
         </div>
 
         <div class="bottom-nav">
-          <div class="nav-item active" onclick="switchTab('friends', this)"><span class="material-symbols-outlined" style="font-size:26px;">person</span></div>
-          <div class="nav-item" onclick="switchTab('chats', this)"><span class="material-symbols-outlined" style="font-size:24px;">chat_bubble</span></div>
+          <div class="nav-item active" onclick="switchTab('friends', this)">
+             <div class="nav-icon-custom" style="-webkit-mask-image: url('https://i.postimg.cc/kGSthK3Y/user.png'); mask-image: url('https://i.postimg.cc/kGSthK3Y/user.png');"></div>
+          </div>
+          <div class="nav-item" onclick="switchTab('chats', this)">
+             <div class="nav-icon-custom" style="-webkit-mask-image: url('https://i.postimg.cc/X7hwLjRr/image-removebg-preview-(1).png'); mask-image: url('https://i.postimg.cc/X7hwLjRr/image-removebg-preview-(1).png');"></div>
+          </div>
           <div class="nav-item" onclick="switchTab('more', this)"><span class="material-symbols-outlined" style="font-size:28px;">more_horiz</span></div>
         </div>
       </div>
@@ -325,7 +362,13 @@
         </div>
 
         <div id="action-btn-area">
-            <span id="mic-icon" class="material-symbols-outlined">mic</span>
+            <div id="mic-icon">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
             <button id="send-btn" onclick="sendMsg()">
                 <span id="send-icon" class="material-symbols-outlined" style="font-size:18px;">arrow_upward</span>
                 <span id="send-loader" class="loader hidden" style="border-color:#fff; border-bottom-color:transparent; width:14px; height:14px; border-width:2px;"></span>
@@ -468,7 +511,8 @@
   function closeModal(id) {
     const el = document.getElementById(id);
     el.classList.remove("show");
-    setTimeout(() => el.style.display = "none", 200);
+    // 딜레이를 200ms에서 100ms로 줄여서 반응성 개선
+    setTimeout(() => el.style.display = "none", 100);
   }
   function showCustomAlert(msg) {
     document.getElementById("alert-message").innerText = msg;
@@ -537,7 +581,7 @@
             micIcon.style.display = "none";
             sendBtn.style.display = "flex";
         } else {
-            micIcon.style.display = "block";
+            micIcon.style.display = "flex";
             sendBtn.style.display = "none";
         }
     });
@@ -666,7 +710,7 @@
     setTimeout(renderChatList, 300);
     // 입력창 초기화
     document.getElementById("msg-input").value = "";
-    document.getElementById("mic-icon").style.display = "block";
+    document.getElementById("mic-icon").style.display = "flex";
     document.getElementById("send-btn").style.display = "none";
   }
 
@@ -769,7 +813,7 @@
       await fetch(API_URL + "/send", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ room: currentRoomId, name: myName, msg: msg }) });
       input.value = ""; 
       // 전송 후 입력창 상태 초기화 (마이크 보이기, 전송버튼 숨기기)
-      mic.style.display = "block";
+      mic.style.display = "flex";
       btn.style.display = "none";
       loadMsgs();
     } finally { btn.disabled = false; icon.classList.remove("hidden"); loader.classList.add("hidden"); input.focus(); }
@@ -797,7 +841,7 @@
         finally { 
             btn.disabled = false; icon.classList.remove("hidden"); loader.classList.add("hidden"); 
             // 원복
-            mic.style.display = "block"; btn.style.display = "none";
+            mic.style.display = "flex"; btn.style.display = "none";
         }
       };
       img.src = e.target.result;
