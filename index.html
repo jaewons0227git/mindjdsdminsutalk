@@ -541,10 +541,13 @@
   }
 
   function enterRoom(id, title, type) {
+    // 1. 기존에 돌고 있던 인터벌(메시지 불러오기)을 즉시 종료
     if(chatPollInterval) {
         clearInterval(chatPollInterval);
         chatPollInterval = null;
     }
+
+    // 2. 채팅방 정보 설정
     const room = myChatRooms.find(r => r.id === id);
     if (!room) {
       myChatRooms.unshift({ id, title, type, lastMsg: "새 대화", lastReadCount: 0 });
@@ -552,28 +555,40 @@
       room.lastReadCount = room.messages_count || 0;
     }
     localStorage.setItem("myChatRooms", JSON.stringify(myChatRooms));
+    
+    // 3. 현재 방 ID 변경 및 UI 업데이트
     currentRoomId = id;
     document.getElementById("room-title").innerText = title;
     document.getElementById("view-chat").classList.add("open");
-
+    
+    // 4. 화면 초기화 및 캐시 데이터 즉시 렌더링
+    // (이전 채팅방의 메시지가 남아있지 않도록 먼저 비웁니다)
     document.getElementById("chat-msgs").innerHTML = ""; 
+    
     if(allMessagesCache[id]) {
         renderMsgs(allMessagesCache[id]);
     }
 
+    // 5. 서버에서 최신 메시지 한 번 가져오고 1초마다 반복 시작
     loadMsgs();
     chatPollInterval = setInterval(loadMsgs, 1000);
+  }
+
+  // 나갈 때 애니메이션 처리를 위해 exitRoom 함수도 확인해주세요.
+  function exitRoom() {
+    const chatView = document.getElementById("view-chat");
+    // 오른쪽으로 사라지는 애니메이션 (CSS transition 활용)
+    chatView.classList.remove("open");
     
-    // [수정] 캐시된 데이터가 있으면 즉시 렌더링
-    if(allMessagesCache[id]) {
-        renderMsgs(allMessagesCache[id]);
-    } else {
-        document.getElementById("chat-msgs").innerHTML = "";
-        loadMsgs();
+    // 인터벌 종료
+    if(chatPollInterval) {
+        clearInterval(chatPollInterval);
+        chatPollInterval = null;
     }
+    currentRoomId = null;
     
-    if(chatPollInterval) clearInterval(chatPollInterval);
-    chatPollInterval = setInterval(loadMsgs, 1000);
+    // 애니메이션 시간(0.3초) 후 리스트 갱신
+    setTimeout(renderChatList, 300);
   }
 
   function exitRoom() {
