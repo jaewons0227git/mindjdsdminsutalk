@@ -107,6 +107,27 @@
 
   .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none; align-items: center; justify-content: center; }
   .modal-box { background: #fff; width: 80%; max-width: 300px; padding: 20px; border-radius: 16px; text-align: center; }
+  
+  /* 메시지 메뉴 전용 스타일 수정 */
+  #msgMenuModal { background: transparent; pointer-events: none; }
+  #msgMenuModal .modal-box { 
+    position: absolute; 
+    width: 80px; 
+    padding: 5px; 
+    border-radius: 8px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+    pointer-events: auto; 
+    border: 1px solid #eee;
+  }
+  #msgMenuModal .modal-btn { 
+    width: 100%; 
+    padding: 8px; 
+    margin-top: 2px; 
+    font-size: 12px; 
+    border-radius: 4px; 
+    font-weight: normal;
+  }
+
   .modal-btn { width: 100%; padding: 12px; margin-top: 8px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
   .bg-y { background: #fef01b; color: #3b1e1e; }
   .bg-g { background: #f2f2f2; color: #333; }
@@ -429,6 +450,15 @@
     }, 2000);
     
     initCanvasEvents();
+    
+    // 수정/삭제 메뉴 외부 클릭 시 닫기 기능 추가
+    window.addEventListener('mousedown', (e) => {
+      const modal = document.getElementById('msgMenuModal');
+      const box = modal.querySelector('.modal-box');
+      if(modal.style.display === 'flex' && !box.contains(e.target)) {
+        closeModal('msgMenuModal');
+      }
+    });
   }
 
   // [추가] 모든 메시지 한 번에 불러오기
@@ -574,7 +604,6 @@
     chatPollInterval = setInterval(loadMsgs, 1000);
   }
 
-  // 나갈 때 애니메이션 처리를 위해 exitRoom 함수도 확인해주세요.
   function exitRoom() {
     const chatView = document.getElementById("view-chat");
     // 오른쪽으로 사라지는 애니메이션 (CSS transition 활용)
@@ -588,14 +617,6 @@
     currentRoomId = null;
     
     // 애니메이션 시간(0.3초) 후 리스트 갱신
-    setTimeout(renderChatList, 300);
-  }
-
-  function exitRoom() {
-    document.getElementById("view-chat").classList.remove("open");
-    clearInterval(chatPollInterval);
-    currentRoomId = null;
-    // 애니메이션 후 렌더링 갱신
     setTimeout(renderChatList, 300);
   }
 
@@ -647,11 +668,14 @@
 
   async function loadMsgs() {
     if(!currentRoomId) return;
+    const initialRoomId = currentRoomId; // [수정] 데이터 가져오기 전 방 ID 저장
     try {
       const res = await fetch(`${API_URL}/messages?room=${currentRoomId}`);
       const msgs = await res.json();
       
-      // [수정] 캐시 업데이트
+      // [수정] 데이터를 가져온 후 현재 방 ID가 바뀌었는지 확인 (다르면 렌더링 무시)
+      if(initialRoomId !== currentRoomId) return;
+
       allMessagesCache[currentRoomId] = msgs;
 
       await fetch(`${API_URL}/mark-read`, {
@@ -714,9 +738,9 @@
 
       let contentHtml = "";
       if (m.image) {
-          contentHtml = `<img src="${m.image}" class="img-msg" onclick="${isMe ? `openMsgMenu('${m.id}', true)` : ''}">`;
+          contentHtml = `<img src="${m.image}" class="img-msg" onclick="${isMe ? `openMsgMenu(event, '${m.id}', true)` : ''}">`;
       } else {
-          contentHtml = `<div class="bubble" onclick="${isMe ? `openMsgMenu('${m.id}', false)` : ''}">${linkify(m.msg)}</div>`;
+          contentHtml = `<div class="bubble" onclick="${isMe ? `openMsgMenu(event, '${m.id}', false)` : ''}">${linkify(m.msg)}</div>`;
       }
       
       if(m.preview) {
@@ -812,10 +836,25 @@
     input.value = "";
   }
 
-  function openMsgMenu(id, isImage) {
+  function openMsgMenu(e, id, isImage) {
     selectedMsgId = id;
+    const modal = document.getElementById("msgMenuModal");
+    const box = modal.querySelector('.modal-box');
+    
     document.getElementById("edit-btn-modal").style.display = isImage ? "none" : "block";
-    document.getElementById("msgMenuModal").style.display = "flex";
+    
+    // 위치 설정: 클릭한 좌표 근처에 띄우기 (작은 팝업)
+    modal.style.display = "flex";
+    
+    let x = e.clientX;
+    let y = e.clientY;
+    
+    // 화면 우측/하단 넘침 방지
+    if (x + 90 > window.innerWidth) x -= 90;
+    if (y + 100 > window.innerHeight) y -= 100;
+    
+    box.style.left = x + "px";
+    box.style.top = y + "px";
   }
 
   async function deleteMsgServer() {
