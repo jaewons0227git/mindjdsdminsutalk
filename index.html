@@ -541,6 +541,10 @@
   }
 
   function enterRoom(id, title, type) {
+    if(chatPollInterval) {
+        clearInterval(chatPollInterval);
+        chatPollInterval = null;
+    }
     const room = myChatRooms.find(r => r.id === id);
     if (!room) {
       myChatRooms.unshift({ id, title, type, lastMsg: "새 대화", lastReadCount: 0 });
@@ -551,6 +555,14 @@
     currentRoomId = id;
     document.getElementById("room-title").innerText = title;
     document.getElementById("view-chat").classList.add("open");
+
+    document.getElementById("chat-msgs").innerHTML = ""; 
+    if(allMessagesCache[id]) {
+        renderMsgs(allMessagesCache[id]);
+    }
+
+    loadMsgs();
+    chatPollInterval = setInterval(loadMsgs, 1000);
     
     // [수정] 캐시된 데이터가 있으면 즉시 렌더링
     if(allMessagesCache[id]) {
