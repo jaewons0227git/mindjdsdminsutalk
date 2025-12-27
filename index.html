@@ -221,6 +221,37 @@
     #view-chat.open ~ #pc-placeholder { display: none; }
     .chat-header .material-symbols-outlined[onclick="exitRoom()"] { display: none; }
   }
+
+
+
+  /* 1. 색상 변수 정의 (기본 라이트 모드) */
+:root {
+  --bg-color: #ffffff;
+  --text-color: #000000;
+  --header-bg: #ffffff;
+  --input-bg: #f0f0f0;
+  --bubble-other: #f0f0f0;
+  --border-color: rgba(0,0,0,0.05);
+  --list-hover: #f9f9f9;
+}
+
+/* 2. 다크모드 클래스 적용 시 색상 */
+body.dark-mode {
+  --bg-color: #1c1c1e;
+  --text-color: #ffffff;
+  --header-bg: #1c1c1e;
+  --input-bg: #2c2c2e;
+  --bubble-other: #3a3a3c;
+  --border-color: rgba(255,255,255,0.1);
+  --list-hover: #2c2c2e;
+}
+
+/* 3. 기존 스타일의 고정 색상을 변수로 변경 (주요 예시) */
+html, body, #view-chat, #view-home, .chat-header { background-color: var(--bg-color); color: var(--text-color); }
+.other .bubble { background: var(--bubble-other); color: var(--text-color); }
+#msg-input-container { background: var(--input-bg); }
+#msg-input { color: var(--text-color); }
+.list-item { border-bottom: 1px solid var(--border-color); }
 </style>
 
 </head>
@@ -307,6 +338,14 @@
               <button class="modal-btn bg-g" style="margin:0;" onclick="toggleStatusEditor()">취소</button>
             </div>
           </div>
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color);">
+  <div style="font-weight: bold; margin-bottom: 10px;">테마 설정</div>
+  <select id="theme-select" class="login-input" style="width:100%;" onchange="changeTheme(this.value)">
+    <option value="auto">자동 (시스템 설정)</option>
+    <option value="light">라이트 모드</option>
+    <option value="dark">다크 모드</option>
+  </select>
+</div>
           <div class="more-menu">
             <div class="menu-btn" onclick="toggleStatusEditor()"><span class="material-symbols-outlined menu-icon">edit_note</span><span class="menu-text">상태변경</span></div>
             <div class="menu-btn" onclick="openClearHistoryConfirm()"><span class="material-symbols-outlined menu-icon">delete_sweep</span><span class="menu-text">기록삭제</span></div>
@@ -1124,6 +1163,38 @@
       c.appendChild(div);
     });
   }
+
+  // 페이지 로드 시 테마 설정 불러오기
+window.addEventListener('load', () => {
+    const savedTheme = localStorage.getItem("chatTheme") || "auto";
+    document.getElementById("theme-select").value = savedTheme;
+    applyTheme(savedTheme);
+});
+
+// 테마 변경 및 저장
+function changeTheme(val) {
+    localStorage.setItem("chatTheme", val);
+    applyTheme(val);
+}
+
+// 실제 테마 적용 로직
+function applyTheme(theme) {
+    const body = document.body;
+    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    if (theme === "dark" || (theme === "auto" && systemDark)) {
+        body.classList.add("dark-mode");
+    } else {
+        body.classList.remove("dark-mode");
+    }
+}
+
+// 시스템 테마 변경 감지 (자동 모드일 때 실시간 반영)
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+    if (localStorage.getItem("chatTheme") === "auto") {
+        applyTheme("auto");
+    }
+});
 </script>
 </body>
 </html>
