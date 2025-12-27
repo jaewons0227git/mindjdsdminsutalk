@@ -9,7 +9,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="https://i.postimg.cc/7YKGq6tt/Chat-GPT-Image-2025nyeon-12wol-25il-ohu-11-48-18-removebg-preview.png">
 
 <style>
-  /* ===== 기존 스타일 유지 및 UI 수정 ===== */
+  /* ===== 기존 스타일 유지 ===== */
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   input, textarea { touch-action: auto !important; -webkit-user-select: text; user-select: text; }
   html, body { margin: 0; padding: 0; width: 100%; height: 100vh; height: 100dvh; overflow: hidden; position: fixed; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; background-color: #fff; font-size: 13px; color: #000; }
@@ -57,8 +57,8 @@
   #view-chat { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #b2c7d9; z-index: 200; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), visibility 0s 0.3s; visibility: hidden; }
   #view-chat.open { transform: translateX(0); visibility: visible; transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), visibility 0s 0s; }
   
-  /* 채팅방 내부 로딩 스타일 */
-  #chat-loading-overlay { position: absolute; top: 50px; left: 0; width: 100%; height: calc(100% - 100px); background: #b2c7d9; display: none; align-items: center; justify-content: center; z-index: 150; }
+  /* 채팅방 내부 로딩 오버레이 수정 */
+  #chat-loading-overlay { position: absolute; top: 50px; left: 0; width: 100%; bottom: calc(58px + env(safe-area-inset-bottom)); background: #b2c7d9; display: none; align-items: center; justify-content: center; z-index: 150; }
   .chat-loader { width: 35px; height: 35px; border: 4px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: rotation 1s linear infinite; }
 
   #pc-placeholder { flex: 1; background: #f9f9f9; display: none; flex-direction: column; align-items: center; justify-content: center; color: #ccc; }
@@ -103,17 +103,19 @@
   .img-msg { max-width: 200px; border-radius: 10px; margin-top: 5px; display: block; cursor: pointer; }
   .edit-tag { font-size: 9px; color: rgba(0,0,0,0.4); margin-top: 2px; }
 
-  #input-area { background: #fff; padding: 10px 10px calc(10px + env(safe-area-inset-bottom)) 10px; display: flex; gap: 10px; align-items: center; position: relative; z-index: 10; }
+  #input-area { background: #fff; padding: 10px 10px calc(10px + env(safe-area-inset-bottom)) 10px; display: flex; gap: 10px; align-items: center; position: relative; z-index: 10; height: calc(58px + env(safe-area-inset-bottom)); }
   #msg-input { flex: 1; height: 38px; background: #f5f5f5; border: none; border-radius: 20px; padding: 0 16px; outline: none; pointer-events: auto; -webkit-user-select: text; user-select: text; }
   
   #send-btn { width: 38px; height: 38px; background: #fef01b; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; pointer-events: auto; }
   #send-btn:disabled { cursor: default; background: #eee; pointer-events: none; }
 
-  .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none; align-items: center; justify-content: center; }
-  .modal-box { background: #fff; width: 80%; max-width: 300px; padding: 20px; border-radius: 16px; text-align: center; }
+  /* 모달 기본 스타일 */
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; }
+  .modal.show { opacity: 1; display: flex; }
+  .modal-box { background: #fff; width: 85%; max-width: 300px; padding: 20px; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
   
   /* 메시지 메뉴 전용 스타일 */
-  #msgMenuModal { background: transparent; pointer-events: none; }
+  #msgMenuModal { background: transparent; pointer-events: none; opacity: 1; }
   #msgMenuModal .modal-box { 
     position: fixed; 
     width: 80px; 
@@ -242,7 +244,7 @@
           </div>
           <div class="more-menu">
             <div class="menu-btn" onclick="toggleStatusEditor()"><span class="material-symbols-outlined menu-icon">edit_note</span><span class="menu-text">상태변경</span></div>
-            <div class="menu-btn" onclick="clearRoomHistory()"><span class="material-symbols-outlined menu-icon">delete_sweep</span><span class="menu-text">기록삭제</span></div>
+            <div class="menu-btn" onclick="openClearHistoryConfirm()"><span class="material-symbols-outlined menu-icon">delete_sweep</span><span class="menu-text">기록삭제</span></div>
             <div class="menu-btn" onclick="exportChat()"><span class="material-symbols-outlined menu-icon">download</span><span class="menu-text">내보내기</span></div>
             <div class="menu-btn" onclick="importChat()"><span class="material-symbols-outlined menu-icon">upload</span><span class="menu-text">가져오기</span></div>
             <div class="menu-btn" onclick="logout()"><span class="material-symbols-outlined menu-icon" style="color:#d93025; background:#ffebeb;">logout</span><span class="menu-text" style="color:#d93025;">로그아웃</span></div>
@@ -288,6 +290,34 @@
   </div>
 </div>
 
+<div id="alertModal" class="modal">
+  <div class="modal-box">
+    <p id="alert-message" style="margin-bottom:20px; line-height:1.6;"></p>
+    <button class="modal-btn bg-y" onclick="closeModal('alertModal')">확인</button>
+  </div>
+</div>
+
+<div id="confirmModal" class="modal">
+  <div class="modal-box">
+    <p id="confirm-message" style="margin-bottom:20px; line-height:1.6;"></p>
+    <div style="display:flex; gap:10px;">
+        <button class="modal-btn bg-g" style="margin:0;" onclick="closeModal('confirmModal')">취소</button>
+        <button id="confirm-ok-btn" class="modal-btn bg-r" style="margin:0;">확인</button>
+    </div>
+  </div>
+</div>
+
+<div id="editMsgModal" class="modal">
+  <div class="modal-box">
+    <h3 style="margin-top:0;">메시지 수정</h3>
+    <textarea id="edit-msg-input" class="login-input" style="width:100%; border-radius:10px; height:80px; resize:none; padding:10px; margin-bottom:15px;"></textarea>
+    <div style="display:flex; gap:10px;">
+        <button class="modal-btn bg-g" style="margin:0;" onclick="closeModal('editMsgModal')">취소</button>
+        <button class="modal-btn bg-y" style="margin:0;" onclick="submitEditMsg()">저장</button>
+    </div>
+  </div>
+</div>
+
 <div id="createChatModal" class="modal">
   <div class="modal-box">
     <h3>새로운 채팅</h3>
@@ -301,16 +331,16 @@
 <div id="chatMenuModal" class="modal">
   <div class="modal-box">
     <h3 id="menu-room-name">채팅방 설정</h3>
-    <button class="modal-btn bg-g" onclick="leaveRoomLocal()">채팅방 나가기 (나만)</button>
-    <button class="modal-btn bg-r" id="del-room-btn" onclick="deleteRoomGlobal()">채팅방 삭제 (모두에게서)</button>
+    <button class="modal-btn bg-g" onclick="openLeaveRoomConfirm()">채팅방 나가기 (나만)</button>
+    <button class="modal-btn bg-r" id="del-room-btn" onclick="openDeleteRoomConfirm()">채팅방 삭제 (모두에게서)</button>
     <button class="modal-btn bg-g" onclick="closeModal('chatMenuModal')">닫기</button>
   </div>
 </div>
 
 <div id="msgMenuModal" class="modal">
   <div class="modal-box">
-    <button id="edit-btn-modal" class="modal-btn bg-y" onclick="promptEditMsg()">수정</button>
-    <button class="modal-btn bg-r" onclick="deleteMsgServer()">삭제</button>
+    <button id="edit-btn-modal" class="modal-btn bg-y" onclick="openEditModal()">수정</button>
+    <button class="modal-btn bg-r" onclick="openDeleteMsgConfirm()">삭제</button>
     <button class="modal-btn bg-g" onclick="closeModal('msgMenuModal')">취소</button>
   </div>
 </div>
@@ -326,7 +356,7 @@
     </div>
     <button class="modal-btn bg-y" onclick="document.getElementById('profile-file-input').click()">사진 선택</button>
     <button class="modal-btn bg-y" onclick="saveProfileImage()">저장</button>
-    <button class="modal-btn bg-g" onclick="deleteProfileImage()">기본 이미지로 변경</button>
+    <button class="modal-btn bg-g" onclick="openDeleteProfileConfirm()">기본 이미지로 변경</button>
     <button class="modal-btn bg-g" style="margin-top:15px;" onclick="closeModal('profileEditModal')">닫기</button>
   </div>
 </div>
@@ -348,7 +378,7 @@
   let chatPollInterval = null;
   let listPollInterval = null;
   let selectedMsgId = null;
-  let isInitialLoad = true; // 채팅방 첫 진입 체크
+  let isInitialLoad = true;
 
   let cropImg = new Image();
   let cropScale = 1;
@@ -359,6 +389,28 @@
 
   const pastelColors = ["#FFB7B2", "#FFDAC1", "#E2F0CB", "#B5EAD7", "#C7CEEA", "#e4c1f9"];
   function getColor(s) { return pastelColors[(s || "").length % pastelColors.length]; }
+
+  /* ================= 모달 헬퍼 함수 ================= */
+  function openModal(id) {
+    const el = document.getElementById(id);
+    el.style.display = "flex";
+    setTimeout(() => el.classList.add("show"), 10);
+  }
+  function closeModal(id) {
+    const el = document.getElementById(id);
+    el.classList.remove("show");
+    setTimeout(() => el.style.display = "none", 200);
+  }
+  function showCustomAlert(msg) {
+    document.getElementById("alert-message").innerText = msg;
+    openModal("alertModal");
+  }
+  function showCustomConfirm(msg, onConfirm) {
+    document.getElementById("confirm-message").innerText = msg;
+    const okBtn = document.getElementById("confirm-ok-btn");
+    okBtn.onclick = () => { onConfirm(); closeModal("confirmModal"); };
+    openModal("confirmModal");
+  }
 
   if (myId) initApp();
 
@@ -398,7 +450,6 @@
     listPollInterval = setInterval(() => { syncRoomsFromServer(); syncFriends(); }, 2000);
     initCanvasEvents();
     
-    // 메시지 메뉴 외부 클릭 시 닫기
     window.addEventListener('mousedown', (e) => {
       const modal = document.getElementById('msgMenuModal');
       const box = modal.querySelector('.modal-box');
@@ -481,7 +532,6 @@
   function enterRoom(id, title, type) {
     if(chatPollInterval) { clearInterval(chatPollInterval); chatPollInterval = null; }
     
-    // [중요] 진입 즉시 채팅창 숨기고 로딩 표시
     const msgBox = document.getElementById("chat-msgs");
     const loader = document.getElementById("chat-loading-overlay");
     msgBox.style.opacity = "0";
@@ -543,7 +593,6 @@
       allMessagesCache[currentRoomId] = msgs;
       renderMsgs(msgs);
 
-      // [중요] 로딩 완료 후 화면 표시
       if(isInitialLoad) {
           document.getElementById("chat-loading-overlay").style.display = "none";
           document.getElementById("chat-msgs").style.opacity = "1";
@@ -631,7 +680,6 @@
     const box = modal.querySelector('.modal-box');
     document.getElementById("edit-btn-modal").style.display = isImage ? "none" : "block";
     
-    // [중요] 메뉴를 클릭 위치 옆에 띄우기
     modal.style.display = "flex";
     let x = e.clientX; let y = e.clientY;
     if (x + 90 > window.innerWidth) x -= 90;
@@ -639,47 +687,68 @@
     box.style.left = x + "px"; box.style.top = y + "px";
   }
 
-  async function deleteMsgServer() {
-    if(!confirm("이 메시지를 삭제할까요?")) return;
-    await fetch(API_URL + "/delete-msg", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ room: currentRoomId, msgId: selectedMsgId }) });
-    closeModal('msgMenuModal'); loadMsgs();
+  /* 수정/삭제 모달 연동 */
+  function openEditModal() {
+    closeModal('msgMenuModal');
+    const roomMsgs = allMessagesCache[currentRoomId] || [];
+    const target = roomMsgs.find(m => m.id === selectedMsgId);
+    if(target) {
+        document.getElementById("edit-msg-input").value = target.msg;
+        openModal("editMsgModal");
+    }
   }
 
-  async function promptEditMsg() {
-    const newMsg = prompt("수정할 내용을 입력하세요:"); if(!newMsg) return;
+  async function submitEditMsg() {
+    const newMsg = document.getElementById("edit-msg-input").value.trim();
+    if(!newMsg) return;
     await fetch(API_URL + "/edit-msg", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ room: currentRoomId, msgId: selectedMsgId, msg: newMsg }) });
-    closeModal('msgMenuModal'); loadMsgs();
+    closeModal('editMsgModal');
+    loadMsgs();
+  }
+
+  function openDeleteMsgConfirm() {
+      closeModal('msgMenuModal');
+      showCustomConfirm("이 메시지를 삭제할까요?", async () => {
+          await fetch(API_URL + "/delete-msg", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ room: currentRoomId, msgId: selectedMsgId }) });
+          loadMsgs();
+      });
   }
 
   function openChatMenu() {
     const room = myChatRooms.find(r => r.id === currentRoomId);
     document.getElementById("menu-room-name").innerText = room.title;
     document.getElementById("del-room-btn").style.display = (room.type === 'group') ? "block" : "none";
-    document.getElementById("chatMenuModal").style.display = "flex";
+    openModal("chatMenuModal");
   }
 
-  function leaveRoomLocal() {
-    if(!confirm("리스트에서 이 채팅방을 없앨까요?")) return;
-    myChatRooms = myChatRooms.filter(r => r.id !== currentRoomId); localStorage.setItem("myChatRooms", JSON.stringify(myChatRooms));
-    closeModal('chatMenuModal'); exitRoom();
+  function openLeaveRoomConfirm() {
+      closeModal('chatMenuModal');
+      showCustomConfirm("리스트에서 이 채팅방을 없앨까요?", () => {
+          myChatRooms = myChatRooms.filter(r => r.id !== currentRoomId); 
+          localStorage.setItem("myChatRooms", JSON.stringify(myChatRooms));
+          exitRoom();
+      });
   }
 
-  async function deleteRoomGlobal() {
-    if(!confirm("이 채팅방의 모든 내용을 삭제하고 방을 없앨까요?")) return;
-    await fetch(API_URL + "/delete-room", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ room: currentRoomId }) });
-    myChatRooms = myChatRooms.filter(r => r.id !== currentRoomId); localStorage.setItem("myChatRooms", JSON.stringify(myChatRooms));
-    closeModal('chatMenuModal'); exitRoom();
+  function openDeleteRoomConfirm() {
+      closeModal('chatMenuModal');
+      showCustomConfirm("이 채팅방의 모든 내용을 삭제하고 방을 없앨까요?", async () => {
+          await fetch(API_URL + "/delete-room", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ room: currentRoomId }) });
+          myChatRooms = myChatRooms.filter(r => r.id !== currentRoomId); 
+          localStorage.setItem("myChatRooms", JSON.stringify(myChatRooms));
+          exitRoom();
+      });
   }
 
   function openCreateChatModal() {
     const container = document.getElementById("friend-select-container"); container.innerHTML = "";
     friendList.forEach(f => { container.innerHTML += `<div class="friend-select-item"><input type="checkbox" name="invited-friend" value="${f.name}" id="chk-${f.id}"><label for="chk-${f.id}">${f.name}</label></div>`; });
-    document.getElementById("createChatModal").style.display = "flex";
+    openModal("createChatModal");
   }
 
   function createGroupChat() {
     const name = document.getElementById("new-room-name").value.trim(); const checked = document.querySelectorAll('input[name="invited-friend"]:checked');
-    if(!name) return alert("방 이름을 입력하세요");
+    if(!name) return showCustomAlert("방 이름을 입력하세요");
     let participants = [myName]; checked.forEach(c => participants.push(c.value));
     const roomId = `group_${Date.now()}`; enterRoom(roomId, name, 'group');
     fetch(API_URL + "/send", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ room: roomId, name: "System", msg: `${myName}님이 방을 만들었습니다.`, participants: participants }) });
@@ -695,7 +764,7 @@
       const cvs = document.getElementById("crop-canvas"); const ctx = cvs.getContext("2d");
       ctx.clearRect(0, 0, cvs.width, cvs.height); ctx.fillStyle = "#eee"; ctx.fillRect(0,0, cvs.width, cvs.height);
       if(myProfileImg) { cropImg.src = myProfileImg; cropImg.onload = () => { cropScale = 1; cropOffsetX = 0; cropOffsetY = 0; document.getElementById("zoom-slider").value = 1; drawCropCanvas(); } }
-      document.getElementById("profileEditModal").style.display = "flex";
+      openModal("profileEditModal");
   }
 
   function handleProfileSelect(input) {
@@ -741,10 +810,11 @@
       myProfileImg = compressed; localStorage.setItem("myProfileImg", myProfileImg); updateMyInfoUI(); closeModal("profileEditModal");
   }
 
-  async function deleteProfileImage() {
-      if(!confirm("기본 이미지로 돌아갈까요?")) return;
-      await fetch(API_URL + "/update-profile-img", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ id: myId, image: null }) });
-      myProfileImg = ""; localStorage.setItem("myProfileImg", ""); updateMyInfoUI(); closeModal("profileEditModal");
+  function openDeleteProfileConfirm() {
+      showCustomConfirm("기본 이미지로 돌아갈까요?", async () => {
+          await fetch(API_URL + "/update-profile-img", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ id: myId, image: null }) });
+          myProfileImg = ""; localStorage.setItem("myProfileImg", ""); updateMyInfoUI(); closeModal("profileEditModal");
+      });
   }
   
   document.getElementById("msg-input").addEventListener("keydown", e => { if(e.key==="Enter") sendMsg(); });
@@ -754,13 +824,28 @@
     await fetch(API_URL + "/update-status", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({id: myId, status: ns}) });
     myStatus = ns; localStorage.setItem("myStatus", ns); updateMyInfoUI(); toggleStatusEditor();
   }
-  function clearRoomHistory() { if(confirm("기록을 삭제하시겠습니까?")) { myChatRooms = []; localStorage.setItem("myChatRooms", "[]"); renderChatList(); } }
+
+  function openClearHistoryConfirm() {
+      showCustomConfirm("기록을 삭제하시겠습니까?", () => {
+          myChatRooms = []; localStorage.setItem("myChatRooms", "[]"); renderChatList();
+      });
+  }
+
   function exportChat() { const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(myChatRooms)); const node = document.createElement("a"); node.setAttribute("href", dataStr); node.setAttribute("download", "chat_backup.json"); node.click(); }
   function importChat() { document.getElementById("file-input").click(); }
   function handleFileImport(input) {
     const file = input.files[0]; if(!file) return;
     const reader = new FileReader();
-    reader.onload = (e) => { try { myChatRooms = JSON.parse(e.target.result); localStorage.setItem("myChatRooms", JSON.stringify(myChatRooms)); renderChatList(); } catch(err) { alert("잘못된 파일입니다."); } };
+    reader.onload = (e) => { 
+        try { 
+            myChatRooms = JSON.parse(e.target.result); 
+            localStorage.setItem("myChatRooms", JSON.stringify(myChatRooms)); 
+            renderChatList(); 
+            showCustomAlert("복원이 완료되었습니다.");
+        } catch(err) { 
+            showCustomAlert("잘못된 파일입니다."); 
+        } 
+    };
     reader.readAsText(file); input.value = "";
   }
   
@@ -773,7 +858,6 @@
       c.appendChild(div);
     });
   }
-  function closeModal(id) { document.getElementById(id).style.display = "none"; }
 </script>
 </body>
 </html>
