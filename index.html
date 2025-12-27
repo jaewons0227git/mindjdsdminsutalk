@@ -54,8 +54,8 @@
   .nav-item { display: flex; flex-direction: column; align-items: center; color: #bbb; cursor: pointer; width: 100%; }
   .nav-item.active { color: #333; }
   
-  #view-chat { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #b2c7d9; z-index: 200; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); visibility: hidden; }
-  #view-chat.open { transform: translateX(0); visibility: visible; }
+  #view-chat { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #b2c7d9; z-index: 200; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), visibility 0s 0.3s; visibility: hidden; }
+  #view-chat.open { transform: translateX(0); visibility: visible; transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), visibility 0s 0s; }
   
   #pc-placeholder { flex: 1; background: #f9f9f9; display: none; flex-direction: column; align-items: center; justify-content: center; color: #ccc; }
   #pc-placeholder .material-symbols-outlined { font-size: 64px; margin-bottom: 10px; }
@@ -63,6 +63,9 @@
   .chat-header { height: 50px; background: rgba(255,255,255,0.95); display: flex; align-items: center; padding: 0 10px; border-bottom: 1px solid rgba(0,0,0,0.05); }
   .chat-msgs { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; touch-action: pan-y; }
   
+  .date-divider { display: flex; align-items: center; justify-content: center; margin: 20px 0; }
+  .date-divider span { background: rgba(0,0,0,0.1); color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 11px; }
+
   .msg-row { display: flex; width: 100%; flex-shrink: 0; position: relative; }
   .msg-row.me { justify-content: flex-end; }
   .msg-row.other { justify-content: flex-start; align-items: flex-start; }
@@ -120,78 +123,12 @@
 
   @media (min-width: 768px) {
     #left-side { width: 380px; flex-shrink: 0; }
-    
-    /* [수정/추가 시작] 채팅창 퇴장 애니메이션 및 날짜 구분선 스타일 */
-    /* --- [수정 시작] 날짜 구분선 중앙 정렬 및 가독성 개선 --- */
-.date-divider {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%; /* 전체 너비 확보 */
-    margin: 30px 0;
-    font-size: 11px;
-    color: #556677;
-    text-align: center;
-}
-.date-divider::before, .date-divider::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    background: rgba(0, 0, 0, 0.1);
-    margin: 0 15px;
-}
-/* --- [수정 끝] --- */
-
-/* --- [수정 시작] 채팅창 애니메이션 (오른쪽으로 슬라이드) --- */
-#view-chat { 
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-    background-color: #b2c7d9; z-index: 200; 
-    display: flex; flex-direction: column; 
-    /* 기본 상태: 오른쪽으로 밀려나 있음 */
-    transform: translateX(100%); 
-    transition: transform 0.3s ease-in-out, visibility 0.3s; 
-    visibility: hidden; 
-}
-/* 열렸을 때 위치 */
-#view-chat.open { 
-    transform: translateX(0); 
-    visibility: visible; 
-}
-/* --- [수정 끝] --- */
-
-/* --- [추가 시작] PC 버전 2분할 레이아웃 (가로 768px 이상) --- */
-@media (min-width: 768px) {
-    #screen-container {
-        display: flex; /* 가로 배치 */
-        max-width: 1000px;
-        margin: 0 auto;
-        border-left: 1px solid #ddd;
-        border-right: 1px solid #ddd;
-        position: relative;
-    }
-
-    /* 왼쪽 탭 영역 고정 너비 */
-    #tab-friends, #tab-chats, #tab-more {
-        width: 350px !important;
-        height: 100vh;
-        border-right: 1px solid #ddd;
-    }
-
-    /* 오른쪽 채팅창 영역 고정 표시 */
-    #view-chat {
-        position: relative; /* 절대 위치 해제 */
-        flex: 1; /* 남은 공간 모두 사용 */
-        transform: none !important; /* 애니메이션 제거 */
-        visibility: visible !important; /* 항상 표시 */
-        border-left: 1px solid #ddd;
-    }
-
-    /* PC에서 뒤로가기 버튼 숨기기 (선택 사항) */
-    #view-chat .back-btn {
-        display: none;
-    }
-}
-/* --- [추가 끝] --- */
+    #view-chat { position: relative; transform: none; visibility: visible; display: none; z-index: 10; flex: 1; border-left: 1px solid #ddd; }
+    #view-chat.open { display: flex; }
+    #pc-placeholder { display: flex; }
+    #view-chat.open ~ #pc-placeholder { display: none; }
+    .chat-header .material-symbols-outlined[onclick="exitRoom()"] { display: none; }
+  }
                  </style>
 
 </head>
@@ -422,6 +359,7 @@
   let myProfileImg = localStorage.getItem("myProfileImg") || ""; 
   let friendList = JSON.parse(localStorage.getItem("friendList") || "[]");
   let myChatRooms = JSON.parse(localStorage.getItem("myChatRooms") || "[]");
+  let allMessagesCache = {}; // [추가] 전체 메시지 캐시
   let currentRoomId = null;
   let chatPollInterval = null;
   let listPollInterval = null;
@@ -434,11 +372,6 @@
   let cropOffsetY = 0;
   let isDragging = false;
   let startX, startY;
-
-  // --- [추가 시작] 전역 데이터 관리 변수 ---
-  let allMessages = {}; // { room_id: [messages...] } 형태의 로컬 캐시
-  let lastSyncTimestamp = 0; // 마지막으로 동기화된 메시지의 ID(시간)
-  // --- [추가 끝] ---
 
   const pastelColors = ["#FFB7B2", "#FFDAC1", "#E2F0CB", "#B5EAD7", "#C7CEEA", "#e4c1f9"];
   function getColor(s) { return pastelColors[(s || "").length % pastelColors.length]; }
@@ -481,39 +414,32 @@
     }
   }
 
-  // --- [수정 시작] 초기화 시 전체 메시지 로드 ---
-  async function initApp() {
+  function initApp() {
     document.getElementById("view-login").style.display = "none";
     document.getElementById("screen-container").style.display = "block";
-
-    // 1. 모든 대화 기록을 처음에 한 번에 불러오기
-    await fetchFullHistory();
-    
     updateMyInfoUI(); renderFriends(); renderChatList();
     
-    // 2. 동기화 루프 (새 메시지 및 친구 정보)
-    if(listPollInterval) clearInterval(listPollInterval);
+    // [추가] 로그인 직후 모든 대화기록 불러오기
+    fetchAllMessages();
+
+    // 룸 동기화 및 친구 목록 동기화
     listPollInterval = setInterval(() => {
-        syncData(); // 메시지 동기화
-        syncFriends(); // 친구 정보 동기화
+        syncRoomsFromServer();
+        syncFriends();
     }, 2000);
     
     initCanvasEvents();
   }
 
-  async function fetchFullHistory() {
-    try {
-        const res = await fetch(`${API_URL}/all-messages`);
-        const msgs = await res.json();
-        allMessages = {}; 
-        msgs.forEach(m => {
-            if(!allMessages[m.room]) allMessages[m.room] = [];
-            allMessages[m.room].push(m);
-            if(parseFloat(m.id) > lastSyncTimestamp) lastSyncTimestamp = parseFloat(m.id);
-        });
-    } catch(e) { console.error("초기 로딩 실패", e); }
+  // [추가] 모든 메시지 한 번에 불러오기
+  async function fetchAllMessages() {
+      try {
+          const res = await fetch(`${API_URL}/get-all-messages?id=${myId}`);
+          const data = await res.json();
+          allMessagesCache = data; // 캐시 저장
+          if(currentRoomId) renderMsgs(allMessagesCache[currentRoomId] || []);
+      } catch(e) {}
   }
-  // --- [수정 끝] ---
 
   function sendPushNotification(title, body) {
     if (Notification.permission === "granted") {
@@ -521,47 +447,60 @@
     }
   }
 
-  // --- [수정 시작] 동기화 로직: 새 메시지만 캐시에 추가 및 알림 필터링 ---
-  async function syncData() {
+  async function syncRoomsFromServer() {
     try {
-      const res = await fetch(`${API_URL}/all-messages`);
-      const msgs = await res.json();
-      let hasNew = false;
-
-      msgs.forEach(m => {
-        const timeId = parseFloat(m.id);
-        if(timeId > lastSyncTimestamp) {
-          if(!allMessages[m.room]) allMessages[m.room] = [];
-          allMessages[m.room].push(m);
-          lastSyncTimestamp = timeId;
-          hasNew = true;
-
-          // [필수] 내가 보낸 메시지가 아닐 때만 알림 발생
-          if(m.sender_id !== myId) {
-            if(currentRoomId !== m.room || document.hidden) {
-              sendPushNotification(m.name, m.msg || "사진을 보냈습니다.");
+      const res = await fetch(`${API_URL}/my-rooms?name=${myName}&id=${myId}`);
+      const serverRooms = await res.json();
+      let changed = false;
+      serverRooms.forEach(sr => {
+        const local = myChatRooms.find(r => r.id === sr.id);
+        if(!local) {
+          let title = sr.id.startsWith('private') ? sr.id.replace('private_','').replace(myId,'').replace('_','') : sr.id.replace('group_','');
+          if(sr.id.startsWith('private')) {
+            const f = friendList.find(fr => sr.id.includes(fr.id));
+            if(f) title = f.name;
+          }
+          myChatRooms.unshift({ id: sr.id, title, type: sr.id.split('_')[0], lastMsg: sr.lastMsg, lastReadCount: 0, creator: sr.creator, messages_count: sr.messages_count, lastSender: sr.lastSender });
+          changed = true;
+          if(sr.creator !== myName) sendPushNotification("새 채팅방", `${title} 방에 초대되었습니다.`);
+        } else {
+          if(local.messages_count !== sr.messages_count) {
+             // [수정] 내가 보낸 메시지가 아닐 때만 알림 발생
+             if(sr.messages_count > (local.messages_count || 0)) {
+               if(sr.lastSender !== myName) {
+                   if(currentRoomId !== sr.id || document.hidden) {
+                      sendPushNotification(local.title, sr.lastMsg || "새 메시지가 도착했습니다.");
+                   }
+               }
             }
+            local.messages_count = sr.messages_count;
+            local.lastMsg = sr.lastMsg;
+            local.lastSender = sr.lastSender;
+            changed = true;
+            // [추가] 실시간 동기화 시 개별 방 메시지도 캐시에 추가하기 위해 로드
+            if(currentRoomId === sr.id) loadMsgs();
           }
         }
       });
-
-      if(hasNew) {
+      if(changed) {
+        localStorage.setItem("myChatRooms", JSON.stringify(myChatRooms));
         renderChatList();
-        if(currentRoomId) renderMsgs(allMessages[currentRoomId] || []);
       }
     } catch(e) {}
   }
-  // --- [수정 끝] ---
 
+  // [신규] 친구 목록(프사 포함) 동기화 함수
   async function syncFriends() {
       try {
           const res = await fetch(`${API_URL}/get-friend-list?id=${myId}`);
           const newList = await res.json();
+          // 변경사항 확인 (단순화: JSON 문자열 비교)
           if(JSON.stringify(friendList) !== JSON.stringify(newList)) {
               friendList = newList;
               localStorage.setItem("friendList", JSON.stringify(friendList));
-              renderFriends();
-              renderChatList();
+              renderFriends(); // 친구목록 갱신
+              renderChatList(); // 채팅목록 프사 갱신
+              if(currentRoomId) loadMsgs(); // 채팅창 내부 프사 갱신
           }
       } catch(e) {}
   }
@@ -584,6 +523,7 @@
     document.getElementById("my-name-display").innerText = myName;
     document.getElementById("my-status-display").innerText = myStatus || "상태메시지 없음";
     document.getElementById("more-email-display").innerText = myId + "@mintalk.kro.kr";
+    
     setProfileImg("my-profile-img", myProfileImg, myName);
     setProfileImg("more-profile-img", myProfileImg, myName);
   }
@@ -600,87 +540,46 @@
     if(tab === 'chats') renderChatList();
   }
 
-  // --- [수정 시작] 채팅방 입장 및 퇴장 애니메이션 ---
   function enterRoom(id, title, type) {
+    const room = myChatRooms.find(r => r.id === id);
+    if (!room) {
+      myChatRooms.unshift({ id, title, type, lastMsg: "새 대화", lastReadCount: 0 });
+    } else {
+      room.lastReadCount = room.messages_count || 0;
+    }
+    localStorage.setItem("myChatRooms", JSON.stringify(myChatRooms));
     currentRoomId = id;
     document.getElementById("room-title").innerText = title;
-    
-    // 캐시된 메시지 즉시 렌더링
-    const msgs = allMessages[id] || [];
-    renderMsgs(msgs);
-
     document.getElementById("view-chat").classList.add("open");
     
-    // 읽음 처리 기준 시점 저장
-    if(msgs.length > 0) {
-        localStorage.setItem(`lastSeen_${id}`, msgs[msgs.length-1].id);
+    // [수정] 캐시된 데이터가 있으면 즉시 렌더링
+    if(allMessagesCache[id]) {
+        renderMsgs(allMessagesCache[id]);
+    } else {
+        document.getElementById("chat-msgs").innerHTML = "";
+        loadMsgs();
     }
-
-    document.getElementById("view-chat").classList.add("open");
-
-    // 서버에 읽음 신호 전송
-    fetch(`${API_URL}/mark-read`, {
-        method: "POST", headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ room: id, id: myId })
-    });
+    
+    if(chatPollInterval) clearInterval(chatPollInterval);
+    chatPollInterval = setInterval(loadMsgs, 1000);
   }
 
   function exitRoom() {
-    // 나가는 시점의 마지막 메시지를 봤다고 기록
-    const msgs = allMessages[currentRoomId] || [];
-    if(msgs.length > 0) {
-        localStorage.setItem(`lastSeen_${currentRoomId}`, msgs[msgs.length-1].id);
-    }
-
-    // 오른쪽으로 사라지는 클래스 제거
     document.getElementById("view-chat").classList.remove("open");
-    
-    if (window.innerWidth < 768) {
-        setTimeout(() => {
-            currentRoomId = null;
-            renderChatList();
-        }, 300); // CSS transition 시간(0.3s)과 동일하게 설정
-    } else {
-        renderChatList();
-    }
+    clearInterval(chatPollInterval);
+    currentRoomId = null;
+    // 애니메이션 후 렌더링 갱신
+    setTimeout(renderChatList, 300);
   }
-  // --- [수정 끝] ---
-
-  // --- [추가 시작] 읽지 않은 개수 계산 (상대방 메시지만) ---
-  function getUnreadCount(room_id) {
-    const msgs = allMessages[room_id] || [];
-    const lastSeenId = parseFloat(localStorage.getItem(`lastSeen_${room_id}`) || "0");
-    // 내가 보낸 것 제외 && 마지막 확인 시간 이후의 메시지만 필터링
-    return msgs.filter(m => m.sender_id !== myId && parseFloat(m.id) > lastSeenId).length;
-  }
-  // --- [추가 끝] ---
 
   function renderChatList() {
     const container = document.getElementById("chat-list-container");
     container.innerHTML = "";
-
-    // 서버 룸 정보를 대신하여 로컬 캐시(allMessages)의 키들로 목록 생성 가능하지만 
-    // 기존 myChatRooms 로직을 유지하며 '읽지않음' 숫자만 업데이트합니다.
-    if(myChatRooms.length === 0 && Object.keys(allMessages).length === 0) {
+    if(myChatRooms.length === 0) {
       container.innerHTML = "<div style='padding:20px; text-align:center; color:#999;'>진행 중인 채팅이 없습니다.</div>";
       return;
     }
-
-    // myChatRooms에 캐시된 방 목록이 없을 경우를 대비해 allMessages 기반으로 보정
-    Object.keys(allMessages).forEach(rid => {
-        if(!myChatRooms.find(r => r.id === rid)) {
-            myChatRooms.push({ id: rid, title: rid, type: rid.split('_')[0], lastMsg: "대화 기록 있음" });
-        }
-    });
-
     myChatRooms.forEach(room => {
-      const msgs = allMessages[room.id] || [];
-      const lastMsgObj = msgs[msgs.length - 1];
-      const lastMsgText = lastMsgObj ? (lastMsgObj.msg || "사진을 보냈습니다.") : "대화 내용 없음";
-      
-      const unreadCount = getUnreadCount(room.id);
-      const unreadHtml = unreadCount > 0 ? `<div class="unread-badge">${unreadCount}</div>` : "";
-
       const isPrivate = room.type === 'private';
       const iconChar = isPrivate ? (room.title ? room.title[0] : '?') : '📢';
       
@@ -691,6 +590,12 @@
       }
 
       const badge = isPrivate ? `<span class="badge-p">1:1</span>` : `<span class="badge-g">단체</span>`;
+      
+      // [수정] 내가 보낸 메시지가 마지막인 경우 배지 0으로 표시 (상대방이 보낸 것만 카운트)
+      let unreadCount = (room.messages_count || 0) - (room.lastReadCount || 0);
+      if(room.lastSender === myName) unreadCount = 0; 
+      
+      const unreadHtml = unreadCount > 0 ? `<div class="unread-badge">${unreadCount}</div>` : "";
 
       const div = document.createElement("div");
       div.className = "list-item";
@@ -705,7 +610,7 @@
         ${imgHtml}
         <div class="text-area">
           <div class="name">${room.title}</div>
-          <div class="desc">${badge} ${lastMsgText}</div>
+          <div class="desc">${badge} ${room.lastMsg || '대화 내용 없음'}</div>
         </div>
         ${unreadHtml}
       `;
@@ -713,18 +618,37 @@
     });
   }
 
+  async function loadMsgs() {
+    if(!currentRoomId) return;
+    try {
+      const res = await fetch(`${API_URL}/messages?room=${currentRoomId}`);
+      const msgs = await res.json();
+      
+      // [수정] 캐시 업데이트
+      allMessagesCache[currentRoomId] = msgs;
+
+      await fetch(`${API_URL}/mark-read`, {
+          method: "POST", headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({ room: currentRoomId, id: myId })
+      });
+
+      renderMsgs(msgs);
+      const room = myChatRooms.find(r => r.id === currentRoomId);
+      if(room) { room.messages_count = msgs.length; room.lastReadCount = msgs.length; }
+    } catch(e) {}
+  }
+
   function linkify(text) {
-    if(!text) return "";
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     return text.replace(urlRegex, function(url) {
       return `<a href="${url}" target="_blank">${url}</a>`;
     });
   }
 
-  // --- [추가 시작] 한국 시간 및 날짜 구분선 로직 ---
-  function formatKoreanTime(timestamp) {
-    const date = new Date(parseFloat(timestamp) * 1000);
-    return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: true });
+  // [추가] 타임스탬프를 한국 날짜 문자열로 변환 (yyyy년 m월 d일 요일)
+  function formatDate(ts) {
+      const date = new Date(parseFloat(ts) * 1000);
+      return date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
   }
 
   function renderMsgs(msgs) {
@@ -732,34 +656,34 @@
     const isAtBottom = box.scrollHeight - box.scrollTop <= box.clientHeight + 100;
     
     box.innerHTML = "";
-    let lastDateStr = "";
-    
+    let lastDate = "";
+
     msgs.forEach(m => {
-      // 날짜 구분선 추가
-      const msgDate = new Date(parseFloat(m.id) * 1000);
-      const dateStr = `${msgDate.getFullYear()}년 ${msgDate.getMonth()+1}월 ${msgDate.getDate()}일`;
-      
-      if(dateStr !== lastDateStr) {
+      // [추가] 날짜 구분선 로직
+      const currentDate = formatDate(m.id);
+      if(currentDate !== lastDate) {
           const dateDiv = document.createElement("div");
           dateDiv.className = "date-divider";
-          dateDiv.innerText = dateStr;
+          dateDiv.innerHTML = `<span>${currentDate}</span>`;
           box.appendChild(dateDiv);
-          lastDateStr = dateStr;
+          lastDate = currentDate;
       }
 
-      const isMe = (m.sender_id === myId || m.name === myName);
+      const isMe = m.name === myName;
       const div = document.createElement("div");
       div.className = `msg-row ${isMe ? 'me' : 'other'}`;
       
       let senderImg = "";
       if(!isMe) {
-          const friend = friendList.find(f => f.name === m.name || f.id === m.sender_id);
+          const friend = friendList.find(f => f.name === m.name);
           if(friend && friend.profile_img) senderImg = `background-image:url(${friend.profile_img}); background-color:transparent;`;
           else senderImg = `background-color:${getColor(m.name)}`;
       }
 
-      const timeStr = formatKoreanTime(m.id);
-      let readCountDisplay = (m.read_by && m.read_by.length < 2 && isMe) ? "1" : "";
+      let readCountDisplay = "";
+      if (m.read_by && isMe) {
+          if (m.read_by.length < 2) readCountDisplay = "1";
+      }
 
       let contentHtml = "";
       if (m.image) {
@@ -776,7 +700,8 @@
                     <div class="preview-title">${m.preview.title}</div>
                     <div class="preview-desc">${m.preview.description}</div>
                 </div>
-            </a>`;
+            </a>
+          `;
       }
 
       if(m.edited) contentHtml += `<span class="edit-tag">수정됨</span>`;
@@ -789,7 +714,7 @@
              ${contentHtml}
              <div style="display:flex; flex-direction:column; justify-content:flex-end;">
                 <span class="read-count">${readCountDisplay}</span>
-                <span class="msg-time">${timeStr}</span>
+                <span class="msg-time">${m.time}</span>
              </div>
           </div>
         </div>
@@ -798,7 +723,6 @@
     });
     if(isAtBottom) box.scrollTop = box.scrollHeight;
   }
-  // --- [수정 끝] ---
 
   async function sendMsg() {
     const input = document.getElementById("msg-input");
@@ -813,10 +737,10 @@
     try {
       await fetch(API_URL + "/send", {
         method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ room: currentRoomId, name: myName, sender_id: myId, msg: msg })
+        body: JSON.stringify({ room: currentRoomId, name: myName, msg: msg })
       });
       input.value = ""; 
-      syncData(); // 즉시 동기화
+      loadMsgs();
     } finally {
       btn.disabled = false; icon.classList.remove("hidden"); loader.classList.add("hidden");
       input.focus();
@@ -848,9 +772,9 @@
         try {
           await fetch(API_URL + "/send", {
             method:"POST", headers:{"Content-Type":"application/json"},
-            body: JSON.stringify({ room: currentRoomId, name: myName, sender_id: myId, image: compressedBase64, msg: "사진을 보냈습니다." })
+            body: JSON.stringify({ room: currentRoomId, name: myName, image: compressedBase64, msg: "사진을 보냈습니다." })
           });
-          syncData();
+          loadMsgs();
         } finally {
           btn.disabled = false; icon.classList.remove("hidden"); loader.classList.add("hidden");
         }
@@ -873,9 +797,7 @@
       method:"POST", headers:{"Content-Type":"application/json"},
       body: JSON.stringify({ room: currentRoomId, msgId: selectedMsgId })
     });
-    // 로컬 캐시에서도 삭제
-    allMessages[currentRoomId] = allMessages[currentRoomId].filter(m => m.id !== selectedMsgId);
-    closeModal('msgMenuModal'); renderMsgs(allMessages[currentRoomId]);
+    closeModal('msgMenuModal'); loadMsgs();
   }
 
   async function promptEditMsg() {
@@ -885,11 +807,11 @@
       method:"POST", headers:{"Content-Type":"application/json"},
       body: JSON.stringify({ room: currentRoomId, msgId: selectedMsgId, msg: newMsg })
     });
-    closeModal('msgMenuModal'); syncData();
+    closeModal('msgMenuModal'); loadMsgs();
   }
 
   function openChatMenu() {
-    const room = myChatRooms.find(r => r.id === currentRoomId) || {title: currentRoomId, type:'private'};
+    const room = myChatRooms.find(r => r.id === currentRoomId);
     document.getElementById("menu-room-name").innerText = room.title;
     document.getElementById("del-room-btn").style.display = (room.type === 'group') ? "block" : "none";
     document.getElementById("chatMenuModal").style.display = "flex";
@@ -909,7 +831,6 @@
       body: JSON.stringify({ room: currentRoomId })
     });
     myChatRooms = myChatRooms.filter(r => r.id !== currentRoomId);
-    delete allMessages[currentRoomId];
     localStorage.setItem("myChatRooms", JSON.stringify(myChatRooms));
     closeModal('chatMenuModal'); exitRoom();
   }
@@ -920,7 +841,7 @@
     friendList.forEach(f => {
       container.innerHTML += `
         <div class="friend-select-item">
-          <input type="checkbox" name="invited-friend" value="${f.name}" id="chk-${f.id}" data-id="${f.id}">
+          <input type="checkbox" name="invited-friend" value="${f.name}" id="chk-${f.id}">
           <label for="chk-${f.id}">${f.name}</label>
         </div>`;
     });
@@ -948,12 +869,16 @@
     enterRoom(roomId, friendName, 'private');
   }
 
+  // --- 프로필 사진 Canvas 편집 로직 ---
   function openProfileEdit() {
+      // 캔버스 초기화
       const cvs = document.getElementById("crop-canvas");
       const ctx = cvs.getContext("2d");
       ctx.clearRect(0, 0, cvs.width, cvs.height);
       ctx.fillStyle = "#eee";
       ctx.fillRect(0,0, cvs.width, cvs.height);
+      
+      // 내 현재 이미지가 있으면 로드
       if(myProfileImg) {
           cropImg.src = myProfileImg;
           cropImg.onload = () => {
@@ -976,9 +901,13 @@ function handleProfileSelect(input) {
             const scaleX = cvs.width / cropImg.width;
             const scaleY = cvs.height / cropImg.height;
             const baseScale = Math.max(scaleX, scaleY); 
-            cropScale = baseScale; cropOffsetX = 0; cropOffsetY = 0;
+            cropScale = baseScale; 
+            cropOffsetX = 0; 
+            cropOffsetY = 0;
             const slider = document.getElementById("zoom-slider");
-            slider.min = baseScale * 0.5; slider.max = baseScale * 5; slider.value = baseScale;
+            slider.min = baseScale * 0.5;
+            slider.max = baseScale * 5;
+            slider.value = baseScale;
             drawCropCanvas();
         }
         cropImg.src = e.target.result;
@@ -999,15 +928,20 @@ function drawCropCanvas() {
     ctx.drawImage(cropImg, x, y, sWidth, sHeight);
 }
 
-  function handleImageZoom(val) { cropScale = parseFloat(val); drawCropCanvas(); }
+  function handleImageZoom(val) {
+      cropScale = parseFloat(val);
+      drawCropCanvas();
+  }
 
   function initCanvasEvents() {
       const cvs = document.getElementById("crop-canvas");
       const startDrag = (x, y) => { isDragging = true; startX = x; startY = y; };
       const moveDrag = (x, y) => {
           if(!isDragging) return;
-          cropOffsetX += x - startX; cropOffsetY += y - startY;
-          startX = x; startY = y; drawCropCanvas();
+          cropOffsetX += x - startX;
+          cropOffsetY += y - startY;
+          startX = x; startY = y;
+          drawCropCanvas();
       };
       const endDrag = () => { isDragging = false; };
       cvs.addEventListener("mousedown", e => startDrag(e.clientX, e.clientY));
@@ -1027,7 +961,8 @@ function drawCropCanvas() {
       });
       myProfileImg = compressedBase64;
       localStorage.setItem("myProfileImg", myProfileImg);
-      updateMyInfoUI(); closeModal("profileEditModal");
+      updateMyInfoUI();
+      closeModal("profileEditModal");
   }
 
   async function deleteProfileImage() {
@@ -1036,8 +971,10 @@ function drawCropCanvas() {
             method: "POST", headers: {"Content-Type":"application/json"},
             body: JSON.stringify({ id: myId, image: null })
       });
-      myProfileImg = ""; localStorage.setItem("myProfileImg", "");
-      updateMyInfoUI(); closeModal("profileEditModal");
+      myProfileImg = "";
+      localStorage.setItem("myProfileImg", "");
+      updateMyInfoUI();
+      closeModal("profileEditModal");
   }
   
   document.getElementById("msg-input").addEventListener("keydown", e=>{ if(e.key==="Enter") sendMsg(); });
@@ -1049,7 +986,7 @@ function drawCropCanvas() {
     myStatus = newStat; localStorage.setItem("myStatus", newStat);
     updateMyInfoUI(); toggleStatusEditor(); alert("상태메시지가 변경되었습니다.");
   }
-  function clearRoomHistory() { if(confirm("모든 채팅 기록을 삭제하시겠습니까?")) { myChatRooms = []; localStorage.setItem("myChatRooms", "[]"); allMessages = {}; renderChatList(); } }
+  function clearRoomHistory() { if(confirm("모든 채팅 기록을 삭제하시겠습니까?")) { myChatRooms = []; localStorage.setItem("myChatRooms", "[]"); renderChatList(); } }
   function exportChat() { const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(myChatRooms)); const node = document.createElement("a"); node.setAttribute("href", dataStr); node.setAttribute("download", "chat_backup.json"); document.body.appendChild(node); node.click(); node.remove(); }
   function importChat() { document.getElementById("file-input").click(); }
   function handleFileImport(input) {
@@ -1068,9 +1005,13 @@ function drawCropCanvas() {
       const div = document.createElement("div"); div.className = "list-item";
       div.onclick = () => startPrivateChat(f.id, f.name);
       let imgHtml = `<div class="profile-thumb" style="background:${getColor(f.name)}">${f.name[0]}</div>`;
-      if(f.profile_img) imgHtml = `<div class="profile-thumb" style="background-image:url(${f.profile_img}); background-color:transparent;"></div>`;
-      div.innerHTML = `<div class="profile-thumb" style="${f.profile_img ? `background-image:url(${f.profile_img}); background-color:transparent;` : `background:${getColor(f.name)}`}">${f.profile_img?'':f.name[0]}</div>
-        <div class="text-area"><div class="name">${f.name}</div><div class="desc">${f.status || '상태메시지 없음'}</div></div>`;
+      if(f.profile_img) {
+          imgHtml = `<div class="profile-thumb" style="background-image:url(${f.profile_img}); background-color:transparent;"></div>`;
+      }
+      div.innerHTML = `
+        ${imgHtml}
+        <div class="text-area"><div class="name">${f.name}</div><div class="desc">${f.status || '상태메시지 없음'}</div></div>
+      `;
       c.appendChild(div);
     });
   }
