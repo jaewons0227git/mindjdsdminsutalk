@@ -9,34 +9,12 @@
 <link rel="icon" type="image/png" sizes="16x16" href="https://i.postimg.cc/7YKGq6tt/Chat-GPT-Image-2025nyeon-12wol-25il-ohu-11-48-18-removebg-preview.png">
 
 <style>
-  /* ===== 기존 스타일 유지 및 요청사항 반영 ===== */
+  /* ===== 기존 스타일 유지 및 업데이트 ===== */
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  input, textarea { touch-action: auto !important; -webkit-user-select: text; user-select: text; }
-  
-  /* 배경을 약간 어둡게 처리하여 모바일 여백 효과 강조 */
-  body { margin: 0; padding: 0; width: 100%; height: 100vh; height: 100dvh; overflow: hidden; position: fixed; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; background-color: #f0f0f0; font-size: 13px; color: #000; }
-  
+  /* 한글 입력 오류 수정: touch-action 및 user-select 명시적 설정 */
+  input, textarea { touch-action: manipulation !important; -webkit-user-select: text; user-select: text; }
+  html, body { margin: 0; padding: 0; width: 100%; height: 100vh; height: 100dvh; overflow: hidden; position: fixed; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; background-color: #fff; font-size: 13px; color: #000; }
   .hidden { display: none !important; }
-
-  /* ===== 모바일 화면 여백 및 둥근 모서리 적용 ===== */
-  #screen-container { 
-    width: 100%; 
-    height: 100%; 
-    position: relative; 
-    overflow: hidden; 
-    display: none; 
-    background: #fff;
-  }
-
-  @media (max-width: 768px) {
-    #screen-container {
-        width: calc(100% - 12px);
-        height: calc(100% - 12px);
-        margin: 6px auto;
-        border-radius: 16px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-  }
 
   #view-login { width: 100%; height: 100%; background-color: #fef01b; display: flex; flex-direction: column; align-items: center; justify-content: center; position: absolute; z-index: 9999; top: 0; left: 0; }
   .login-logo { font-size: 80px; margin-bottom: 40px; color: #3b1e1e; }
@@ -47,6 +25,7 @@
   .loader { width: 20px; height: 20px; border: 3px solid #fff; border-bottom-color: transparent; border-radius: 50%; animation: rotation 1s linear infinite; }
   @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+  #screen-container { width: 100%; height: 100%; position: relative; overflow: hidden; display: none; }
   #main-layout { display: flex; width: 100%; height: 100%; }
   #left-side { width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; border-right: 1px solid #eee; }
   
@@ -76,22 +55,23 @@
   .nav-item { display: flex; flex-direction: column; align-items: center; color: #bbb; cursor: pointer; width: 100%; }
   .nav-item.active { color: #333; }
   
-  #view-chat { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #b2c7d9; z-index: 200; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), visibility 0s 0.3s; visibility: hidden; }
+  /* 채팅 화면 배경 흰색으로 변경 */
+  #view-chat { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #fff; z-index: 200; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), visibility 0s 0.3s; visibility: hidden; }
   #view-chat.open { transform: translateX(0); visibility: visible; transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), visibility 0s 0s; }
   
-  #chat-loading-overlay { position: absolute; top: 50px; left: 0; width: 100%; bottom: calc(58px + env(safe-area-inset-bottom)); background: #b2c7d9; display: none; align-items: center; justify-content: center; z-index: 150; }
-  .chat-loader { width: 35px; height: 35px; border: 4px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: rotation 1s linear infinite; }
+  #chat-loading-overlay { position: absolute; top: 50px; left: 0; width: 100%; bottom: calc(58px + env(safe-area-inset-bottom)); background: #fff; display: none; align-items: center; justify-content: center; z-index: 150; }
+  .chat-loader { width: 35px; height: 35px; border: 4px solid rgba(0,0,0,0.1); border-top-color: #007bff; border-radius: 50%; animation: rotation 1s linear infinite; }
 
   #pc-placeholder { flex: 1; background: #f9f9f9; display: none; flex-direction: column; align-items: center; justify-content: center; color: #ccc; }
   #pc-placeholder .material-symbols-outlined { font-size: 64px; margin-bottom: 10px; }
 
-  .chat-header { height: 50px; background: rgba(255,255,255,0.95); display: flex; align-items: center; padding: 0 10px; border-bottom: 1px solid rgba(0,0,0,0.05); position: relative; z-index: 160; }
-  .chat-msgs { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; touch-action: pan-y; transition: opacity 0.3s ease; }
+  .chat-header { height: 50px; background: #fff; display: flex; align-items: center; padding: 0 10px; border-bottom: 1px solid rgba(0,0,0,0.05); position: relative; z-index: 160; }
+  .chat-msgs { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; touch-action: pan-y; transition: opacity 0.3s ease; }
   
   .date-divider { display: flex; align-items: center; justify-content: center; margin: 20px 0; }
-  .date-divider span { background: rgba(0,0,0,0.1); color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 11px; }
+  .date-divider span { background: rgba(0,0,0,0.05); color: #555; padding: 4px 12px; border-radius: 12px; font-size: 11px; }
 
-  .msg-row { display: flex; width: 100%; flex-shrink: 0; position: relative; }
+  .msg-row { display: flex; width: 100%; flex-shrink: 0; position: relative; margin-bottom: 5px; }
   .msg-row.me { justify-content: flex-end; }
   .msg-row.other { justify-content: flex-start; align-items: flex-start; }
 
@@ -102,14 +82,18 @@
   .me .msg-content { align-items: flex-end; }
   .other .msg-content { align-items: flex-start; }
 
-  .bubble { padding: 8px 12px; font-size: 14px; border-radius: 12px; word-break: break-all; white-space: pre-wrap; width: fit-content; line-height: 1.4; position: relative; text-align: left; }
-  .other .bubble { background: #fff; border-top-left-radius: 2px; color: #000; }
-  .me .bubble { background: #fef01b; border-top-right-radius: 2px; color: #000; cursor: pointer; }
+  /* 말풍선 스타일 변경 (요청사항 반영) */
+  .bubble { padding: 10px 14px; font-size: 15px; word-break: break-all; white-space: pre-wrap; width: fit-content; line-height: 1.4; position: relative; text-align: left; }
+  /* 상대방: 회색 배경, 둥근 모서리 */
+  .other .bubble { background: #f0f0f0; color: #000; border-radius: 20px; border-top-left-radius: 4px; }
+  /* 나: 파란색 배경, 흰색 글씨, 둥근 모서리 */
+  .me .bubble { background: #3b82f6; color: #fff; border-radius: 20px; border-top-right-radius: 4px; cursor: pointer; }
   
   .bubble a { color: #007bff; text-decoration: none; cursor: pointer; }
+  .me .bubble a { color: #fff; text-decoration: underline; }
   .bubble a:hover { text-decoration: underline; }
 
-  .link-preview { display: block; margin-top: 8px; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid rgba(0,0,0,0.1); max-width: 240px; text-decoration: none; color: inherit !important; cursor: pointer; }
+  .link-preview { display: block; margin-top: 8px; background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0,0,0,0.1); max-width: 240px; text-decoration: none; color: inherit !important; cursor: pointer; }
   .link-preview img { width: 100%; height: 120px; object-fit: cover; display: block; }
   .preview-txt { padding: 10px; }
   .preview-title { font-weight: bold; font-size: 13px; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #000; }
@@ -117,138 +101,66 @@
 
   .read-container { display: flex; align-items: flex-end; }
   .me .read-container { flex-direction: row-reverse; }
-  .read-count { font-size: 10px; color: #fef01b; margin: 0 4px; font-weight: bold; text-shadow: 0 0 2px rgba(0,0,0,0.1); }
-  .me .read-count { color: #555; } 
-  .msg-time { font-size: 9px; color: #555; margin: 0 4px; min-width: max-content; }
+  .read-count { font-size: 10px; color: #3b82f6; margin: 0 4px; font-weight: bold; }
+  .me .read-count { color: #3b82f6; } 
+  .msg-time { font-size: 10px; color: #999; margin: 0 4px; min-width: max-content; }
 
-  /* 이미지 메시지 둥근 모서리 적용 */
-  .img-msg { max-width: 200px; border-radius: 18px; margin-top: 5px; display: block; cursor: pointer; }
+  .img-msg { max-width: 200px; border-radius: 16px; margin-top: 5px; display: block; cursor: pointer; }
   .edit-tag { font-size: 9px; color: rgba(0,0,0,0.4); margin-top: 2px; }
 
-  #input-area { background: #fff; padding: 8px 10px calc(8px + env(safe-area-inset-bottom)) 10px; display: flex; gap: 8px; align-items: center; position: relative; z-index: 10; min-height: calc(56px + env(safe-area-inset-bottom)); }
+  /* 입력창 영역 스타일 재정의 (요청사항 반영) */
+  #input-area { background: #fff; padding: 5px 10px calc(5px + env(safe-area-inset-bottom)) 10px; display: flex; gap: 8px; align-items: center; position: relative; z-index: 10; min-height: 50px; }
   
-  /* 입력창 및 버튼 높이 통일 (44px) */
-  #msg-input { flex: 1; height: 44px; background: #f5f5f5; border: none; border-radius: 22px; padding: 0 16px; outline: none; pointer-events: auto; -webkit-user-select: text; user-select: text; font-size: 15px;}
+  /* 플러스 버튼 */
+  #plus-btn { width: 32px; height: 32px; background: #e0e0e0; color: #555; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
   
-  #send-btn { width: 44px; height: 44px; background: #fef01b; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; pointer-events: auto; flex-shrink: 0; }
-  #send-btn:disabled { cursor: default; background: #eee; pointer-events: none; }
+  /* 플러스 메뉴 (카메라/갤러리) */
+  #plus-menu { position: absolute; bottom: 60px; left: 10px; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); padding: 10px; display: none; flex-direction: column; gap: 10px; z-index: 100; min-width: 120px; }
+  #plus-menu.show { display: flex; }
+  .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; cursor: pointer; color: #333; font-size: 14px; }
+  .plus-menu-item:hover { background: #f5f5f5; }
 
-  /* 플러스 버튼 스타일 (Input 높이와 동일하게) */
-  .plus-btn-container { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #bbb; flex-shrink: 0; }
-  .plus-btn-container:hover { color: #888; }
-
-  /* 파형(음성) 아이콘 스타일 */
-  .waveform-icon { display: flex; align-items: center; justify-content: center; gap: 3px; width: 44px; height: 44px; cursor: pointer; flex-shrink: 0; }
-  .waveform-bar { width: 3px; background-color: #888; border-radius: 2px; }
-
-  /* 모달 기본 스타일 - 딜레이 개선을 위해 transition 조정 */
-  .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.1s ease; }
+  /* 메시지 입력 박스 */
+  #msg-input-container { flex: 1; background: #f0f0f0; border-radius: 20px; display: flex; align-items: center; padding: 0 15px; height: 40px; }
+  #msg-input { flex: 1; background: transparent; border: none; outline: none; font-size: 15px; padding: 0; color: #000; height: 100%; margin: 0; }
+  
+  /* 녹음/전송 버튼 영역 */
+  #action-btn-area { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; }
+  #mic-icon { color: #555; font-size: 24px; }
+  #send-btn { display: none; width: 32px; height: 32px; background: #3b82f6; border-radius: 50%; border: none; align-items: center; justify-content: center; color: #fff; cursor: pointer; }
+  #send-btn:disabled { background: #ccc; cursor: default; }
+  
+  /* 모달 기본 스타일 */
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; }
   .modal.show { opacity: 1; display: flex; }
   .modal-box { background: #fff; width: 85%; max-width: 300px; padding: 20px; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
   
-  /* 메시지 메뉴 전용 스타일 (기존 PC/중앙 정렬용 - 모바일은 아래 미디어쿼리에서 덮어씀) */
-  #msgMenuModal { background: rgba(0,0,0,0.4); } 
+  /* 메시지 메뉴 전용 스타일 */
+  #msgMenuModal { background: transparent; pointer-events: none; opacity: 1; }
   #msgMenuModal .modal-box { 
-    position: relative; 
-    width: auto;
-    min-width: 200px;
-    max-width: 85%;
-    padding: 0;
-    border-radius: 12px; 
+    position: fixed; 
+    width: 80px; 
+    padding: 5px; 
+    border-radius: 8px; 
     box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
-    overflow: hidden;
-    background: transparent;
+    pointer-events: auto; 
+    border: 1px solid #eee;
+    transform: none;
+    margin: 0;
+  }
+  #msgMenuModal .modal-btn { 
+    width: 100%; 
+    padding: 8px; 
+    margin-top: 2px; 
+    font-size: 12px; 
+    border-radius: 4px; 
+    font-weight: normal;
   }
 
-  /* 메뉴 미리보기 컨테이너 */
-  .menu-preview-container {
-      background: #f0f0f0;
-      padding: 15px;
-      margin-bottom: 10px;
-      border-radius: 12px;
-      text-align: left;
-      font-size: 13px;
-      color: #666;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      max-height: 200px;
-      overflow: hidden;
-  }
-  .menu-preview-content {
-      color: #333;
-      font-weight: 500;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display: -webkit-box;
-      -webkit-line-clamp: 4;
-      -webkit-box-orient: vertical;
-  }
-
-  .modal-btn { width: 100%; padding: 14px; margin-top: 8px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; font-size: 14px; }
-  .bg-y { background: #fef01b; color: #3b1e1e; }
-  .bg-g { background: #fff; color: #333; border: 1px solid #eee; }
+  .modal-btn { width: 100%; padding: 12px; margin-top: 8px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+  .bg-y { background: #3b82f6; color: #fff; } /* 노란색 대신 파란색 테마 적용 */
+  .bg-g { background: #f2f2f2; color: #333; }
   .bg-r { background: #ff5252; color: #fff; }
-
-  /* 모바일 Bottom Sheet 스타일 적용 */
-  @media (max-width: 768px) {
-    #left-side { width: 380px; flex-shrink: 0; }
-    #view-chat { position: relative; transform: none; visibility: visible; display: none; z-index: 10; flex: 1; border-left: 1px solid #ddd; }
-    #view-chat.open { display: flex; }
-    #pc-placeholder { display: flex; }
-    #view-chat.open ~ #pc-placeholder { display: none; }
-    .chat-header .material-symbols-outlined[onclick="exitRoom()"] { display: none; }
-
-    /* 바텀 시트 클래스 (JS에서 토글) */
-    .modal.bottom-sheet {
-        align-items: flex-end;
-        background: rgba(0,0,0,0.5);
-    }
-    .modal.bottom-sheet .modal-box {
-        width: 100%;
-        max-width: 100%;
-        border-radius: 24px 24px 0 0;
-        margin: 0;
-        padding: 24px;
-        background: #fff;
-        animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
-        position: static; /* fixed 위치 해제 */
-        left: auto; top: auto;
-    }
-    @keyframes slideUp {
-        from { transform: translateY(100%); }
-        to { transform: translateY(0); }
-    }
-    
-    /* 메시지 메뉴 내부 버튼 스타일 수정 */
-    #msgMenuModal .modal-btn, #attachMenuModal .modal-btn {
-        margin-top: 0;
-        margin-bottom: 10px;
-        background: #f5f5f5;
-        color: #333;
-        border: none;
-        text-align: left;
-        padding: 16px 20px;
-        border-radius: 16px;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    #msgMenuModal .modal-btn:last-child { margin-bottom: 0; }
-  }
-
-  /* 첨부 파일 메뉴 (바텀 시트용) 그리드 스타일 */
-  .attach-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 10px; }
-  .attach-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; }
-  .attach-icon-box { width: 60px; height: 60px; background: #f5f5f5; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #555; }
-  .attach-text { font-size: 13px; color: #666; font-weight: 500; }
-
-  /* Z-Index 조정: 확인 모달이 메뉴(이미지 확대)보다 위에 뜨도록 설정 */
-  #confirmModal { z-index: 1100; }
-  #alertModal { z-index: 1100; }
-  #msgMenuModal { z-index: 1000; }
 
   .friend-select-list { max-height: 150px; overflow-y: auto; text-align: left; margin: 10px 0; border: 1px solid #eee; padding: 5px; }
   .friend-select-item { display: flex; align-items: center; gap: 10px; padding: 5px; }
@@ -256,6 +168,25 @@
   .crop-container { width: 200px; height: 200px; overflow: hidden; margin: 0 auto; border: 1px solid #ddd; border-radius: 50%; position: relative; background: #000; }
   canvas#crop-canvas { cursor: move; }
   .slider-container { margin: 15px 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+  /* 이미지 뷰어 모달 (요청사항 반영) */
+  #img-viewer-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; }
+  #img-viewer-modal.show { opacity: 1; display: flex; }
+  #img-viewer-content { max-width: 100%; max-height: 80vh; object-fit: contain; transform: scale(1); transition: transform 0.2s; }
+  .viewer-controls { position: absolute; bottom: 30px; display: flex; gap: 20px; z-index: 2001; }
+  .viewer-btn { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.2); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); }
+
+  /* 복사 버튼 스타일 */
+  #copy-btn-modal { display: block; }
+
+  @media (min-width: 768px) {
+    #left-side { width: 380px; flex-shrink: 0; }
+    #view-chat { position: relative; transform: none; visibility: visible; display: none; z-index: 10; flex: 1; border-left: 1px solid #ddd; }
+    #view-chat.open { display: flex; }
+    #pc-placeholder { display: flex; }
+    #view-chat.open ~ #pc-placeholder { display: none; }
+    .chat-header .material-symbols-outlined[onclick="exitRoom()"] { display: none; }
+  }
 </style>
 
 </head>
@@ -288,7 +219,7 @@
 <div id="view-login">
   <span class="material-symbols-outlined login-logo">chat_bubble</span>
   <div class="login-form">
-    <input id="login-id" class="login-input" placeholder="아이디" autocomplete="off">
+    <input id="login-id" class="login-input" placeholder="아이디" autocomplete="off" lang="ko">
     <input id="login-pw" type="password" class="login-input" placeholder="비밀번호">
     <button class="login-btn" onclick="handleLogin()">
       <span id="btn-text">로그인</span>
@@ -373,25 +304,33 @@
       <div id="chat-msgs" class="chat-msgs"></div>
       
       <div id="input-area">
-        <input type="file" id="img-input" class="hidden" accept="image/*" onchange="sendImage(this)">
-        <div class="plus-btn-container" onclick="openAttachMenu()">
-            <span class="material-symbols-outlined" style="font-size:24px;">add</span>
-        </div>
-        
-        <input id="msg-input" placeholder="메시지 입력" autocomplete="off">
-        
-        <div class="waveform-icon">
-            <div class="waveform-bar" style="height: 12px;"></div>
-            <div class="waveform-bar" style="height: 20px;"></div>
-            <div class="waveform-bar" style="height: 14px;"></div>
-            <div class="waveform-bar" style="height: 18px;"></div>
-            <div class="waveform-bar" style="height: 10px;"></div>
+        <button id="plus-btn" onclick="togglePlusMenu()">
+          <span class="material-symbols-outlined" style="font-size:20px;">add</span>
+        </button>
+
+        <div id="plus-menu">
+            <div class="plus-menu-item" onclick="triggerCamera()">
+                <span class="material-symbols-outlined" style="color:#e91e63;">photo_camera</span> 카메라
+            </div>
+            <div class="plus-menu-item" onclick="triggerGallery()">
+                <span class="material-symbols-outlined" style="color:#4caf50;">image</span> 사진
+            </div>
         </div>
 
-        <button id="send-btn" onclick="sendMsg()">
-          <span id="send-icon" class="material-symbols-outlined" style="font-size:20px;">arrow_upward</span>
-          <span id="send-loader" class="loader hidden" style="border-color:#333; border-bottom-color:transparent; width:16px; height:16px; border-width:2px;"></span>
-        </button>
+        <input type="file" id="img-input-camera" class="hidden" accept="image/*" capture="environment" onchange="sendImage(this)">
+        <input type="file" id="img-input-gallery" class="hidden" accept="image/*" onchange="sendImage(this)">
+        
+        <div id="msg-input-container">
+            <input id="msg-input" placeholder="메시지 입력" autocomplete="off" lang="ko">
+        </div>
+
+        <div id="action-btn-area">
+            <span id="mic-icon" class="material-symbols-outlined">mic</span>
+            <button id="send-btn" onclick="sendMsg()">
+                <span id="send-icon" class="material-symbols-outlined" style="font-size:18px;">arrow_upward</span>
+                <span id="send-loader" class="loader hidden" style="border-color:#fff; border-bottom-color:transparent; width:14px; height:14px; border-width:2px;"></span>
+            </button>
+        </div>
       </div>
     </div>
 
@@ -440,26 +379,6 @@
   </div>
 </div>
 
-<div id="attachMenuModal" class="modal bottom-sheet">
-    <div class="modal-box">
-        <div class="attach-grid">
-            <div class="attach-item" onclick="document.getElementById('img-input').click(); closeModal('attachMenuModal');">
-                <div class="attach-icon-box"><span class="material-symbols-outlined">photo_camera</span></div>
-                <div class="attach-text">카메라</div>
-            </div>
-            <div class="attach-item" onclick="document.getElementById('img-input').click(); closeModal('attachMenuModal');">
-                <div class="attach-icon-box"><span class="material-symbols-outlined">image</span></div>
-                <div class="attach-text">앨범</div>
-            </div>
-            <div class="attach-item">
-                <div class="attach-icon-box"><span class="material-symbols-outlined">folder</span></div>
-                <div class="attach-text">파일</div>
-            </div>
-        </div>
-        <button class="modal-btn bg-g" style="margin-top:20px; text-align:center; justify-content:center;" onclick="closeModal('attachMenuModal')">닫기</button>
-    </div>
-</div>
-
 <div id="chatMenuModal" class="modal">
   <div class="modal-box">
     <h3 id="menu-room-name">채팅방 설정</h3>
@@ -471,16 +390,26 @@
 
 <div id="msgMenuModal" class="modal">
   <div class="modal-box">
-    <div id="msg-menu-preview" class="menu-preview-container" style="display:none;"></div>
-
-    <button id="edit-btn-modal" class="modal-btn" onclick="openEditModal()">
-        <span class="material-symbols-outlined">edit</span> 수정
-    </button>
-    <button class="modal-btn" onclick="openDeleteMsgConfirm()" style="color:#d93025;">
-        <span class="material-symbols-outlined">delete</span> 삭제
-    </button>
-    <button class="modal-btn" onclick="closeModal('msgMenuModal')" style="justify-content:center;">취소</button>
+    <button id="copy-btn-modal" class="modal-btn bg-g" onclick="copyMsgText()" style="display:none;">복사</button>
+    <button id="edit-btn-modal" class="modal-btn bg-y" onclick="openEditModal()">수정</button>
+    <button class="modal-btn bg-r" onclick="openDeleteMsgConfirm()">삭제</button>
+    <button class="modal-btn bg-g" onclick="closeModal('msgMenuModal')">취소</button>
   </div>
+</div>
+
+<div id="img-viewer-modal" onclick="closeImageViewer(event)">
+    <img id="img-viewer-content">
+    <div class="viewer-controls" onclick="event.stopPropagation()">
+        <div class="viewer-btn" onclick="downloadImage()">
+            <span class="material-symbols-outlined">download</span>
+        </div>
+        <div class="viewer-btn" onclick="deleteViewingImage()" style="border-color:#ff5252; color:#ff5252;">
+            <span class="material-symbols-outlined">delete</span>
+        </div>
+        <div class="viewer-btn" onclick="closeImageViewerDirect()">
+            <span class="material-symbols-outlined">close</span>
+        </div>
+    </div>
 </div>
 
 <div id="profileEditModal" class="modal">
@@ -516,6 +445,8 @@
   let chatPollInterval = null;
   let listPollInterval = null;
   let selectedMsgId = null;
+  let viewingImgId = null; // 이미지 뷰어에서 보고 있는 메시지 ID
+  let viewingImgUrl = null; // 다운로드를 위한 URL
   let isInitialLoad = true;
 
   let cropImg = new Image();
@@ -537,15 +468,7 @@
   function closeModal(id) {
     const el = document.getElementById(id);
     el.classList.remove("show");
-    // 딜레이를 대폭 줄여서(100ms) 반응성을 개선
-    setTimeout(() => {
-        el.style.display = "none";
-        // 모달 닫힐 때 초기화
-        if(id === 'msgMenuModal') {
-            document.getElementById('msg-menu-preview').innerHTML = "";
-            document.getElementById('msg-menu-preview').style.display = "none";
-        }
-    }, 100);
+    setTimeout(() => el.style.display = "none", 200);
   }
   function showCustomAlert(msg) {
     document.getElementById("alert-message").innerText = msg;
@@ -599,11 +522,49 @@
     window.addEventListener('mousedown', (e) => {
       const modal = document.getElementById('msgMenuModal');
       const box = modal.querySelector('.modal-box');
-      // 모바일 바텀시트일 경우 제외하거나 로직 유지 (박스 밖 클릭시 닫힘)
       if(modal.style.display === 'flex' && !box.contains(e.target)) {
         closeModal('msgMenuModal');
       }
     });
+    
+    // 입력창 이벤트 리스너 추가 (마이크/전송 버튼 스왑)
+    const msgInput = document.getElementById("msg-input");
+    const micIcon = document.getElementById("mic-icon");
+    const sendBtn = document.getElementById("send-btn");
+    
+    msgInput.addEventListener('input', function() {
+        if(this.value.trim().length > 0) {
+            micIcon.style.display = "none";
+            sendBtn.style.display = "flex";
+        } else {
+            micIcon.style.display = "block";
+            sendBtn.style.display = "none";
+        }
+    });
+
+    // 영역 밖 클릭시 플러스 메뉴 닫기
+    window.addEventListener('click', (e) => {
+        const menu = document.getElementById('plus-menu');
+        const btn = document.getElementById('plus-btn');
+        if (!menu.contains(e.target) && !btn.contains(e.target) && menu.classList.contains('show')) {
+            menu.classList.remove('show');
+        }
+    });
+  }
+
+  /* 플러스 메뉴 기능 */
+  function togglePlusMenu() {
+      const menu = document.getElementById("plus-menu");
+      if (menu.classList.contains("show")) menu.classList.remove("show");
+      else menu.classList.add("show");
+  }
+  function triggerCamera() {
+      document.getElementById('img-input-camera').click();
+      document.getElementById("plus-menu").classList.remove("show");
+  }
+  function triggerGallery() {
+      document.getElementById('img-input-gallery').click();
+      document.getElementById("plus-menu").classList.remove("show");
   }
 
   async function fetchAllMessages() {
@@ -703,6 +664,10 @@
     if(chatPollInterval) { clearInterval(chatPollInterval); chatPollInterval = null; }
     currentRoomId = null;
     setTimeout(renderChatList, 300);
+    // 입력창 초기화
+    document.getElementById("msg-input").value = "";
+    document.getElementById("mic-icon").style.display = "block";
+    document.getElementById("send-btn").style.display = "none";
   }
 
   function renderChatList() {
@@ -781,7 +746,10 @@
           else senderImg = `background-color:${getColor(m.name)}`;
       }
       let readCountDisplay = (m.read_by && isMe && m.read_by.length < 2) ? "1" : "";
-      let contentHtml = m.image ? `<img src="${m.image}" class="img-msg" onclick="${isMe ? `openMsgMenu(event, '${m.id}', true)` : ''}">` : `<div class="bubble" onclick="${isMe ? `openMsgMenu(event, '${m.id}', false)` : ''}">${linkify(m.msg)}</div>`;
+      
+      // 이미지 클릭 시 뷰어 호출 (isMe 상관없이)
+      let contentHtml = m.image ? `<img src="${m.image}" class="img-msg" onclick="openImageViewer('${m.image}', '${m.id}')">` : `<div class="bubble" onclick="${isMe ? `openMsgMenu(event, '${m.id}', false)` : `openOtherMsgMenu(event, '${m.id}')`}">${linkify(m.msg)}</div>`;
+      
       if(m.preview) contentHtml += `<a href="${m.preview.url}" target="_blank" class="link-preview">${m.preview.image ? `<img src="${m.preview.image}">` : ''}<div class="preview-txt"><div class="preview-title">${m.preview.title}</div><div class="preview-desc">${m.preview.description}</div></div></a>`;
       if(m.edited) contentHtml += `<span class="edit-tag">수정됨</span>`;
       div.innerHTML = `${!isMe ? `<div class="chat-profile-img" style="${senderImg}">${senderImg.includes('url')?'':m.name[0]}</div>` : ''}<div class="msg-content">${!isMe ? `<span style="font-size:11px; margin-bottom:4px; margin-left:2px; color:#666;">${m.name}</span>` : ''}<div class="read-container">${contentHtml}<div style="display:flex; flex-direction:column; justify-content:flex-end;"><span class="read-count">${readCountDisplay}</span><span class="msg-time">${m.time}</span></div></div></div>`;
@@ -793,17 +761,29 @@
   async function sendMsg() {
     const input = document.getElementById("msg-input"); const btn = document.getElementById("send-btn");
     const icon = document.getElementById("send-icon"); const loader = document.getElementById("send-loader");
+    const mic = document.getElementById("mic-icon");
+    
     const msg = input.value.trim(); if(!msg) return;
     btn.disabled = true; icon.classList.add("hidden"); loader.classList.remove("hidden");
     try {
       await fetch(API_URL + "/send", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ room: currentRoomId, name: myName, msg: msg }) });
-      input.value = ""; loadMsgs();
+      input.value = ""; 
+      // 전송 후 입력창 상태 초기화 (마이크 보이기, 전송버튼 숨기기)
+      mic.style.display = "block";
+      btn.style.display = "none";
+      loadMsgs();
     } finally { btn.disabled = false; icon.classList.remove("hidden"); loader.classList.add("hidden"); input.focus(); }
   }
 
   async function sendImage(input) {
     const file = input.files[0]; if(!file) return;
+    // 로딩 표시 (플러스 버튼 대신 전송 버튼쪽 사용하거나 글로벌 로더 사용 등) - 여기서는 기존 전송버튼 로직 활용
     const btn = document.getElementById("send-btn"); const icon = document.getElementById("send-icon"); const loader = document.getElementById("send-loader");
+    
+    // 강제로 전송 버튼 보여주기 (로딩 표시용)
+    const mic = document.getElementById("mic-icon");
+    mic.style.display = "none"; btn.style.display = "flex";
+
     btn.disabled = true; icon.classList.add("hidden"); loader.classList.remove("hidden");
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -814,57 +794,107 @@
         canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
         const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
         try { await fetch(API_URL + "/send", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ room: currentRoomId, name: myName, image: compressedBase64, msg: "사진을 보냈습니다." }) }); loadMsgs(); } 
-        finally { btn.disabled = false; icon.classList.remove("hidden"); loader.classList.add("hidden"); }
+        finally { 
+            btn.disabled = false; icon.classList.remove("hidden"); loader.classList.add("hidden"); 
+            // 원복
+            mic.style.display = "block"; btn.style.display = "none";
+        }
       };
       img.src = e.target.result;
     };
     reader.readAsDataURL(file); input.value = "";
   }
 
-  function openAttachMenu() {
-      openModal("attachMenuModal");
+  /* 이미지 뷰어 관련 함수 */
+  function openImageViewer(imgUrl, msgId) {
+      viewingImgId = msgId;
+      viewingImgUrl = imgUrl;
+      const modal = document.getElementById('img-viewer-modal');
+      const content = document.getElementById('img-viewer-content');
+      content.src = imgUrl;
+      modal.style.display = 'flex';
+      setTimeout(() => modal.classList.add('show'), 10);
+  }
+
+  function closeImageViewer(e) {
+      // 이미지나 컨트롤 바깥 클릭 시 닫기
+      if (e.target.id === 'img-viewer-modal') {
+          closeImageViewerDirect();
+      }
+  }
+
+  function closeImageViewerDirect() {
+      const modal = document.getElementById('img-viewer-modal');
+      modal.classList.remove('show');
+      setTimeout(() => {
+          modal.style.display = 'none';
+          document.getElementById('img-viewer-content').src = '';
+      }, 200);
+  }
+
+  function downloadImage() {
+      if(!viewingImgUrl) return;
+      const a = document.createElement('a');
+      a.href = viewingImgUrl;
+      a.download = `image_${Date.now()}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+  }
+
+  function deleteViewingImage() {
+      if(!viewingImgId) return;
+      showCustomConfirm("이 사진을 삭제하시겠습니까?", async () => {
+          await fetch(API_URL + "/delete-msg", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ room: currentRoomId, msgId: viewingImgId }) });
+          closeImageViewerDirect();
+          loadMsgs();
+      });
   }
 
   function openMsgMenu(e, id, isImage) {
     selectedMsgId = id;
     const modal = document.getElementById("msgMenuModal");
     const box = modal.querySelector('.modal-box');
+    document.getElementById("edit-btn-modal").style.display = isImage ? "none" : "block";
+    document.getElementById("copy-btn-modal").style.display = "none"; // 내 메시지는 복사 버튼 숨김 (기존 유지)
     
-    // 모바일 여부 확인 (화면 너비 768px 이하)
-    const isMobile = window.innerWidth <= 768;
+    modal.style.display = "flex";
+    let x = e.clientX; let y = e.clientY;
+    if (x + 90 > window.innerWidth) x -= 90;
+    if (y + 100 > window.innerHeight) y -= 100;
+    box.style.left = x + "px"; box.style.top = y + "px";
+  }
 
-    // 메시지 내용 찾아서 프리뷰에 넣기
-    const roomMsgs = allMessagesCache[currentRoomId] || [];
-    const target = roomMsgs.find(m => m.id === id);
-    const previewContainer = document.getElementById("msg-menu-preview");
-    
-    if (target) {
-        previewContainer.style.display = "flex";
-        if (target.image) {
-            previewContainer.innerHTML = `<div style="font-weight:bold; margin-bottom:5px;">보낸 이미지</div><img src="${target.image}" style="width:100%; max-height:150px; object-fit:contain; border-radius:8px;">`;
-        } else {
-            previewContainer.innerHTML = `<div class="menu-preview-content">${target.msg}</div>`;
-        }
-    } else {
-        previewContainer.style.display = "none";
-    }
+  /* 상대방 메시지 클릭 시 메뉴 (복사 기능) */
+  function openOtherMsgMenu(e, id) {
+      selectedMsgId = id;
+      const modal = document.getElementById("msgMenuModal");
+      const box = modal.querySelector('.modal-box');
+      
+      // 상대방 메시지: 수정/삭제 숨기고 복사/취소만 표시 (삭제도 숨기는게 일반적이나 요청에 "복사 버튼" 언급만 있어 삭제는 놔둘 수도 있으나, 보통 상대 메시지 삭제는 안됨. 여기선 복사만 보이게 처리)
+      // 기존 코드상 삭제 API는 본인 것 체크 안하면 삭제될 수도 있지만 UI상 가려줌
+      const menuBtns = box.querySelectorAll('.modal-btn');
+      menuBtns.forEach(btn => btn.style.display = 'none');
+      
+      document.getElementById("copy-btn-modal").style.display = "block";
+      menuBtns[menuBtns.length-1].style.display = "block"; // 취소 버튼
+      
+      modal.style.display = "flex";
+      let x = e.clientX; let y = e.clientY;
+      if (x + 90 > window.innerWidth) x -= 90;
+      if (y + 100 > window.innerHeight) y -= 100;
+      box.style.left = x + "px"; box.style.top = y + "px";
+  }
 
-    document.getElementById("edit-btn-modal").style.display = isImage ? "none" : (isMobile ? "flex" : "block");
-    
-    // 모바일이면 Bottom Sheet 스타일 적용
-    if (isMobile) {
-        modal.classList.add('bottom-sheet');
-        box.style.left = ''; box.style.top = ''; // 위치 초기화
-    } else {
-        modal.classList.remove('bottom-sheet');
-        // PC 위치 계산
-        let x = e.clientX; let y = e.clientY;
-        if (x + 200 > window.innerWidth) x -= 200;
-        if (y + 150 > window.innerHeight) y -= 150;
-        box.style.left = x + "px"; box.style.top = y + "px";
-    }
-    
-    openModal("msgMenuModal");
+  function copyMsgText() {
+      const roomMsgs = allMessagesCache[currentRoomId] || [];
+      const target = roomMsgs.find(m => m.id === selectedMsgId);
+      if(target && target.msg) {
+          navigator.clipboard.writeText(target.msg).then(() => {
+              // 복사 성공 피드백 없이 닫기 or 얼럿? 여기선 그냥 닫기
+          });
+      }
+      closeModal('msgMenuModal');
   }
 
   /* 수정/삭제 모달 연동 */
@@ -887,10 +917,6 @@
   }
 
   function openDeleteMsgConfirm() {
-      // 메뉴는 닫지만, 모바일 BottomSheet 스타일이 남아있을 수 있으므로 class 제거 고려는 closeModal에서 처리됨
-      // 확인창을 띄우기 전에 메뉴 모달 닫기
-      // 하지만 이미지 확대 상태(메뉴가 확대창 역할)에서 삭제를 누른다면 뒤로 가지 않게 z-index 처리됨.
-      // 메뉴 모달을 닫고 확인창을 엶.
       closeModal('msgMenuModal');
       showCustomConfirm("이 메시지를 삭제할까요?", async () => {
           await fetch(API_URL + "/delete-msg", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ room: currentRoomId, msgId: selectedMsgId }) });
