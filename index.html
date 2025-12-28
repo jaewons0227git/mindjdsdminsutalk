@@ -12,12 +12,12 @@
   /* ===== 기존 스타일 유지 및 업데이트 ===== */
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   
-  /* 한글 입력 오류 수정: touch-action 및 user-select 명시적 설정, 포커스 문제 해결 */
+  /* 한글 입력 오류 수정 */
   input, textarea { 
       touch-action: pan-x pan-y !important; 
       -webkit-user-select: text !important; 
       user-select: text !important; 
-      -webkit-transform: translate3d(0,0,0); /* 하드웨어 가속 트리거로 렌더링 이슈 방지 */
+      -webkit-transform: translate3d(0,0,0);
   }
   
   html, body { margin: 0; padding: 0; width: 100%; height: 100vh; height: 100dvh; overflow: hidden; position: fixed; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; background-color: #fff; font-size: 13px; color: #000; }
@@ -168,7 +168,6 @@
   .plus-menu-item:hover { background: #f5f5f5; }
 
   #msg-input-container { flex: 1; background: #f4f4f4; border-radius: 30px; display: flex; align-items: center; padding: 0 15px; height: 40px; }
-  /* 입력창 관련 스타일 수정: font-size, line-height 등 조정하여 텍스트 깨짐 방지 */
   #msg-input { flex: 1; background: transparent; border: none; outline: none; font-size: 15px; line-height: 1.2; padding: 0; color: #000; height: 100%; margin: 0; min-width: 0; }
   
   #action-btn-area { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; }
@@ -189,6 +188,10 @@
   .modal.show { opacity: 1; display: flex; }
   .modal-box { background: #fff; width: 85%; max-width: 300px; padding: 20px; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
   .modal.show .modal-box { transform: scale(1); }
+  
+  /* z-index 수정: 채팅방 메뉴 위에 뜨도록 설정 */
+  #alertModal, #confirmModal, #inviteModal { z-index: 3500 !important; }
+  #chatMenuModal { z-index: 3000; }
   
   #msgMenuModal { background: transparent; pointer-events: none; opacity: 1; }
   #msgMenuModal .modal-box { 
@@ -567,6 +570,7 @@
   let viewingImgUrl = null; 
   let isInitialLoad = true;
   let currentRoomCreator = null; 
+  let currentParticipantsIds = [];
 
   let cropImg = new Image();
   let cropScale = 1;
@@ -646,7 +650,6 @@
       }
     });
     
-    // 입력창 이벤트 리스너 수정 (한글 입력 버그 해결)
     const msgInput = document.getElementById("msg-input");
     const micIcon = document.getElementById("mic-icon");
     const sendBtn = document.getElementById("send-btn");
@@ -661,7 +664,6 @@
         }
     });
 
-    // 엔터키 전송 (IME 조합 중엔 전송 안 함)
     msgInput.addEventListener("keydown", function(e) {
         if(e.key === "Enter" && !e.isComposing) {
             e.preventDefault();
@@ -669,7 +671,6 @@
         }
     });
 
-    // 영역 밖 클릭시 플러스 메뉴 닫기
     window.addEventListener('click', (e) => {
         const menu = document.getElementById('plus-menu');
         const btn = document.getElementById('plus-btn');
@@ -678,7 +679,6 @@
         }
     });
 
-    // 뒤로가기 핸들링 (history api)
     window.onpopstate = function(event) {
         if (currentRoomId) {
             exitRoom(true); 
@@ -715,8 +715,6 @@
       const serverRooms = await res.json();
       let changed = false;
       
-      // 내 로컬 리스트와 서버 리스트 비교
-      // 1. 서버에 없는 방 제거 (강퇴당했거나 삭제됨)
       const serverIds = serverRooms.map(r => r.id);
       const initialLen = myChatRooms.length;
       myChatRooms = myChatRooms.filter(r => serverIds.includes(r.id));
@@ -726,13 +724,11 @@
         const local = myChatRooms.find(r => r.id === sr.id);
         
         let title = sr.title;
-        // 개인 채팅인 경우 상대방 이름으로 제목 설정
         if(sr.type === 'private' && !title) {
              const f = friendList.find(fr => sr.id.includes(fr.id));
              if(f) title = f.name;
              else title = "알 수 없음";
         }
-        // 그룹 채팅인 경우 저장된 이름 없으면 기본값
         if(sr.type === 'group' && !title) title = "그룹 채팅";
 
         if(!local) {
@@ -748,7 +744,6 @@
           });
           changed = true;
         } else {
-          // 업데이트 체크
           if(local.messages_count !== sr.messages_count || local.title !== title || local.creator !== sr.creator) {
              local.messages_count = sr.messages_count; 
              local.lastMsg = sr.lastMsg; 
@@ -821,7 +816,7 @@
     const room = myChatRooms.find(r => r.id === id);
     if (room) {
         room.lastReadCount = room.messages_count || 0;
-        currentRoomCreator = room.creator; // 방장 정보 저장
+        currentRoomCreator = room.creator; 
     }
     localStorage.setItem("myChatRooms", JSON.stringify(myChatRooms));
 
@@ -863,7 +858,6 @@
               if(friend.profile_img) roomImg = friend.profile_img;
           }
       } else {
-          // 그룹 채팅이면 기본 아이콘 또는 별도 로직
           iconChar = room.title[0];
       }
       
@@ -1180,21 +1174,20 @@
       });
   }
 
-  /* 채팅방 메뉴 관련 로직 업데이트 */
   async function openChatMenu() {
     const room = myChatRooms.find(r => r.id === currentRoomId);
     if(!room) return;
 
     document.getElementById("menu-room-name").innerText = room.title;
     
-    // API로 방 정보(참여자, 미디어, 통계) 가져오기
     try {
         const res = await fetch(`${API_URL}/room-info?room=${currentRoomId}&id=${myId}`);
         const data = await res.json();
         
+        currentParticipantsIds = data.participants.map(u => u.id); // 참여자 ID 저장
+
         document.getElementById("menu-msg-count").innerText = `총 메시지 ${data.total_msgs}개`;
         
-        // 참여자 목록 렌더링
         const pList = document.getElementById("menu-participants-list");
         pList.innerHTML = "";
         data.participants.forEach(u => {
@@ -1216,7 +1209,6 @@
             pList.appendChild(card);
         });
 
-        // 미디어 그리드 렌더링
         const mGrid = document.getElementById("menu-media-grid");
         mGrid.innerHTML = "";
         const maxDisplay = 8;
@@ -1231,7 +1223,7 @@
             const more = document.createElement("div");
             more.className = "more-media-btn";
             more.innerText = `더보기 (+${data.images.length - maxDisplay})`;
-            more.onclick = () => showAllImages(data.images); // 간단히 알림이나 전체보기 모달로 구현 가능 (여기선 생략)
+            more.onclick = () => showAllImages(data.images); 
             mGrid.appendChild(more);
         } else if(data.images.length === 0) {
             mGrid.innerHTML = "<div style='grid-column:span 4; text-align:center; color:#ccc; font-size:12px; padding:10px;'>공유된 사진 없음</div>";
@@ -1241,11 +1233,18 @@
         console.error(e);
     }
     
-    // 단체방이면서 내가 만든 방일 때만 삭제 버튼 표시
-    if (room.type === 'group' && room.creator === myId) {
+    // 방 삭제 버튼 권한 체크: 방장이거나 admin인 경우
+    if ((room.type === 'group' && room.creator === myId) || myId === 'admin') {
         document.getElementById("del-room-btn").style.display = "block";
     } else {
         document.getElementById("del-room-btn").style.display = "none";
+    }
+
+    // 1:1 채팅인 경우 초대 버튼 숨김
+    if (currentRoomId.startsWith('private')) {
+        document.querySelector('.invite-btn-area').style.display = 'none';
+    } else {
+        document.querySelector('.invite-btn-area').style.display = 'block';
     }
     
     openModal("chatMenuModal");
@@ -1258,8 +1257,7 @@
               headers: {"Content-Type":"application/json"}, 
               body: JSON.stringify({ room: currentRoomId, target_id: targetId }) 
           });
-          openChatMenu(); // 메뉴 새로고침
-          // 시스템 메시지 전송
+          openChatMenu(); 
           fetch(API_URL + "/send", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ room: currentRoomId, name: "System", msg: `${targetName}님이 내보내졌습니다.` }) });
       });
   }
@@ -1268,7 +1266,10 @@
       const container = document.getElementById("invite-friend-list");
       container.innerHTML = "";
       friendList.forEach(f => {
-          container.innerHTML += `<div class="friend-select-item"><input type="checkbox" name="invite-check" value="${f.id}" id="inv-${f.id}"><label for="inv-${f.id}">${f.name}</label></div>`;
+          // 이미 채팅방에 있는 멤버는 목록에서 제외
+          if(currentParticipantsIds.includes(f.id)) return;
+
+          container.innerHTML += `<div class="friend-select-item"><input type="checkbox" name="invite-check" value="${f.id}" data-name="${f.name}" id="inv-${f.id}"><label for="inv-${f.id}">${f.name}</label></div>`;
       });
       openModal("inviteModal");
   }
@@ -1278,7 +1279,11 @@
       if(checked.length === 0) return closeModal("inviteModal");
       
       const newMembers = [];
-      checked.forEach(c => newMembers.push(c.value));
+      const newMemberNames = [];
+      checked.forEach(c => {
+          newMembers.push(c.value);
+          newMemberNames.push(c.getAttribute('data-name'));
+      });
       
       await fetch(API_URL + "/invite-user", {
           method: "POST", headers: {"Content-Type":"application/json"},
@@ -1286,15 +1291,17 @@
       });
       
       closeModal("inviteModal");
-      openChatMenu(); // 리스트 갱신
-      fetch(API_URL + "/send", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ room: currentRoomId, name: "System", msg: `새로운 멤버가 초대되었습니다.` }) });
+      openChatMenu();
+      
+      // 누구를 초대했는지 이름을 포함하여 시스템 메시지 전송
+      const inviteMsg = `${newMemberNames.join(", ")}님이 초대되었습니다.`;
+      fetch(API_URL + "/send", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ room: currentRoomId, name: "System", msg: inviteMsg }) });
   }
 
   function openLeaveRoomConfirm() {
       closeModal('chatMenuModal');
       showCustomConfirm("채팅방을 나가시겠습니까?", async () => {
           if (currentRoomId.startsWith('group_')) {
-             // 그룹방이면 참여자 목록에서 제거 요청
              await fetch(API_URL + "/kick-user", { 
                   method: "POST", 
                   headers: {"Content-Type":"application/json"}, 
@@ -1338,7 +1345,6 @@
     
     const roomId = `group_${Date.now()}`; 
     
-    // 서버에 방 생성 요청 (메타데이터 저장)
     await fetch(API_URL + "/create-room", {
         method: "POST",
         headers: {"Content-Type":"application/json"},
