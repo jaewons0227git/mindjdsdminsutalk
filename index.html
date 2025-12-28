@@ -11,19 +11,25 @@
 <style>
   /* ===== 기존 스타일 유지 및 업데이트 ===== */
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  /* 한글 입력 오류 수정: touch-action 및 user-select 명시적 설정 */
-  input, textarea { touch-action: auto !important; -webkit-user-select: text !important; user-select: text !important; }
+  
+  /* 한글 입력 오류 수정: touch-action 및 user-select 명시적 설정, 포커스 문제 해결 */
+  input, textarea { 
+      touch-action: pan-x pan-y !important; 
+      -webkit-user-select: text !important; 
+      user-select: text !important; 
+      -webkit-transform: translate3d(0,0,0); /* 하드웨어 가속 트리거로 렌더링 이슈 방지 */
+  }
+  
   html, body { margin: 0; padding: 0; width: 100%; height: 100vh; height: 100dvh; overflow: hidden; position: fixed; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; background-color: #fff; font-size: 13px; color: #000; }
   .hidden { display: none !important; }
 
   #view-login { width: 100%; height: 100%; background-color: #fef01b; display: flex; flex-direction: column; align-items: center; justify-content: center; position: absolute; z-index: 9999; top: 0; left: 0; }
   
-  /* 로그인 로고 이미지 교체 및 색상 적용 */
   .login-logo-img { 
     width: 80px; 
     height: 80px; 
     margin-bottom: 40px; 
-    background-color: #3b1e1e; /* 아이콘 색상 */
+    background-color: #3b1e1e;
     -webkit-mask: url('https://i.postimg.cc/X7hwLjRr/image-removebg-preview-(1).png') no-repeat center / contain;
     mask: url('https://i.postimg.cc/X7hwLjRr/image-removebg-preview-(1).png') no-repeat center / contain;
   }
@@ -35,7 +41,6 @@
   .loader { width: 20px; height: 20px; border: 3px solid #fff; border-bottom-color: transparent; border-radius: 50%; animation: rotation 1s linear infinite; }
   @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-  /* 쫀득한 애니메이션 정의 */
   @keyframes elastic-pop { 
       0% { transform: scale(0.9); } 
       40% { transform: scale(1.05); } 
@@ -50,7 +55,7 @@
 
   #screen-container { width: 100%; height: 100%; position: relative; overflow: hidden; display: none; }
   
-#main-layout { display: flex; width: 100%; height: 100%; padding: 0; background: #fff; }
+  #main-layout { display: flex; width: 100%; height: 100%; padding: 0; background: #fff; }
   
   #left-side { width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; border-right: 1px solid #eee; }
   
@@ -80,7 +85,6 @@
   .nav-item { display: flex; flex-direction: column; align-items: center; color: #bbb; cursor: pointer; width: 100%; transition: color 0.2s; }
   .nav-item.active { color: #333; }
   
-  /* 하단 탭 아이콘 스타일 (쫀득한 애니메이션 적용) */
   .nav-icon-custom {
       width: 24px; height: 24px;
       background-color: #bbb;
@@ -123,23 +127,18 @@
   .me .msg-content { align-items: flex-end; }
   .other .msg-content { align-items: flex-start; }
 
-  /* 버블과 임베드를 감싸는 래퍼 (세로 정렬을 위해) */
   .bubble-wrapper { display: flex; flex-direction: column; }
   .me .bubble-wrapper { align-items: flex-end; }
   .other .bubble-wrapper { align-items: flex-start; }
 
-  /* 말풍선 스타일 */
   .bubble { padding: 10px 14px; font-size: 15px; word-break: break-all; white-space: pre-wrap; width: fit-content; line-height: 1.4; position: relative; text-align: left; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
-  /* 상대방 */
   .other .bubble { background: #f0f0f0; color: #000; border-radius: 20px; border-top-left-radius: 4px; }
-  /* 나 */
   .me .bubble { background: #3b82f6; color: #fff; border-radius: 20px; border-top-right-radius: 4px; cursor: pointer; }
   
   .bubble a { color: #007bff; text-decoration: none; cursor: pointer; }
   .me .bubble a { color: #fff; text-decoration: underline; }
   .bubble a:hover { text-decoration: underline; }
 
-  /* 임베드 스타일 수정 (버블 아래에 위치) */
   .link-preview { display: block; margin-top: 8px; background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid rgba(0,0,0,0.1); width: 100%; max-width: 240px; text-decoration: none; color: inherit !important; cursor: pointer; }
   .link-preview img { width: 100%; height: 120px; object-fit: cover; display: block; }
   .preview-txt { padding: 10px; background: #f9f9f9; }
@@ -153,31 +152,25 @@
   .me .read-count { color: #3b82f6; } 
   .msg-time { font-size: 10px; color: #999; margin: 0 4px; min-width: max-content; }
 
-  /* 전송 중 로딩 애니메이션 (버블 옆) */
   .sending-spinner { width: 12px; height: 12px; border: 2px solid #ccc; border-bottom-color: transparent; border-radius: 50%; animation: rotation 1s linear infinite; margin: 0 4px; }
 
-  /* 이미지 모서리 둥글게 (20px) */
   .img-msg { max-width: 200px; border-radius: 20px; margin-top: 5px; display: block; cursor: pointer; }
   .edit-tag { font-size: 9px; color: rgba(0,0,0,0.4); margin-top: 2px; }
 
-  /* 입력창 영역 스타일 재정의 */
   #input-area { background: #fff; padding: 9px 10px calc(9px + env(safe-area-inset-bottom)) 10px; display: flex; gap: 8px; align-items: center; position: relative; z-index: 10; min-height: 58px; }
   
-  /* 플러스 버튼 */
   #plus-btn { width: 40px; height: 40px; background: #f8f8f8; color: #555; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: transform 0.1s; }
   #plus-btn:active { transform: scale(0.9); }
   
-  /* 플러스 메뉴 */
   #plus-menu { position: absolute; bottom: 60px; left: 10px; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); padding: 10px; display: none; flex-direction: column; gap: 10px; z-index: 100; min-width: 120px; animation: elastic-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); transform-origin: bottom left; }
   #plus-menu.show { display: flex; }
   .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; cursor: pointer; color: #333; font-size: 14px; }
   .plus-menu-item:hover { background: #f5f5f5; }
 
-  /* 메시지 입력 박스 수정 */
   #msg-input-container { flex: 1; background: #f4f4f4; border-radius: 30px; display: flex; align-items: center; padding: 0 15px; height: 40px; }
-  #msg-input { flex: 1; background: transparent; border: none; outline: none; font-size: 15px; padding: 0; color: #000; height: 100%; margin: 0; min-width: 0; }
+  /* 입력창 관련 스타일 수정: font-size, line-height 등 조정하여 텍스트 깨짐 방지 */
+  #msg-input { flex: 1; background: transparent; border: none; outline: none; font-size: 15px; line-height: 1.2; padding: 0; color: #000; height: 100%; margin: 0; min-width: 0; }
   
-  /* 녹음/전송 버튼 영역 */
   #action-btn-area { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; }
   
   #mic-icon { display: flex; align-items: center; justify-content: center; gap: 2px; height: 100%; }
@@ -192,13 +185,11 @@
   #send-btn:active { transform: scale(0.9); }
   #send-icon { font-size: 24px !important; }
   
-  /* 모달 기본 스타일 (쫀득하게) */
   .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 3000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; }
   .modal.show { opacity: 1; display: flex; }
   .modal-box { background: #fff; width: 85%; max-width: 300px; padding: 20px; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
   .modal.show .modal-box { transform: scale(1); }
   
-  /* 메시지 메뉴 전용 스타일 */
   #msgMenuModal { background: transparent; pointer-events: none; opacity: 1; }
   #msgMenuModal .modal-box { 
     position: fixed; 
@@ -208,9 +199,9 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
     pointer-events: auto; 
     border: 1px solid #eee;
-    transform: none; /* 좌표 고정이라 transform 제거 */
+    transform: none; 
     margin: 0;
-    transition: opacity 0.2s ease; /* 메뉴는 쫀득함 대신 페이드 */
+    transition: opacity 0.2s ease;
   }
   #msgMenuModal .modal-btn { width: 100%; padding: 8px; margin-top: 2px; font-size: 12px; border-radius: 4px; font-weight: normal; }
 
@@ -227,7 +218,6 @@
   canvas#crop-canvas { cursor: move; }
   .slider-container { margin: 15px 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
-  /* 이미지 뷰어 모달 */
   #img-viewer-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; }
   #img-viewer-modal.show { opacity: 1; display: flex; }
   #img-viewer-content { max-width: 100%; max-height: 80vh; object-fit: contain; transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
@@ -237,6 +227,35 @@
   .viewer-btn:active { transform: scale(0.9); }
 
   #copy-btn-modal { display: block; }
+  
+  /* === 채팅 메뉴(우측 상단) 스타일 업데이트 === */
+  #chatMenuModal .modal-box {
+      max-width: 340px;
+      width: 90%;
+      text-align: left;
+      padding: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      max-height: 85vh;
+  }
+  .menu-section { padding: 15px; border-bottom: 1px solid #eee; }
+  .menu-section h4 { margin: 0 0 10px 0; font-size: 13px; color: #888; }
+  .menu-user-list { max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+  .menu-user-card { display: flex; align-items: center; gap: 10px; }
+  .menu-user-thumb { width: 36px; height: 36px; border-radius: 12px; background: #eee; flex-shrink: 0; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999; }
+  .menu-user-info { flex: 1; display: flex; flex-direction: column; }
+  .menu-user-name { font-weight: bold; font-size: 14px; }
+  .menu-user-role { font-size: 11px; color: #FF9800; font-weight: bold; margin-left: 5px; }
+  .kick-btn { padding: 4px 8px; background: #ffebee; color: #d32f2f; border-radius: 4px; font-size: 11px; font-weight: bold; border: none; cursor: pointer; }
+  
+  .menu-media-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 10px; }
+  .media-thumb { width: 100%; aspect-ratio: 1/1; background: #eee; border-radius: 8px; cursor: pointer; object-fit: cover; }
+  .more-media-btn { grid-column: span 4; text-align: center; padding: 10px; background: #f5f5f5; border-radius: 8px; font-size: 12px; color: #666; margin-top: 5px; cursor: pointer; }
+  
+  .menu-stats { font-size: 12px; color: #666; text-align: center; padding: 10px; background: #f9f9f9; }
+  .invite-btn-area { margin-top: 10px; text-align: center; }
+  .invite-btn { width: 100%; padding: 8px; background: #f0f0f0; border: 1px dashed #ccc; border-radius: 8px; color: #555; cursor: pointer; font-size: 12px; }
 
   @media (min-width: 768px) {
     #left-side { width: 380px; flex-shrink: 0; }
@@ -385,7 +404,7 @@
         <input type="file" id="img-input-gallery" class="hidden" accept="image/*" onchange="sendImage(this)">
         
         <div id="msg-input-container">
-            <input id="msg-input" placeholder="메시지 입력" autocomplete="off" lang="ko" type="text">
+            <input id="msg-input" placeholder="메시지 입력" autocomplete="off" spellcheck="false" autocorrect="off" lang="ko" type="text">
         </div>
 
         <div id="action-btn-area">
@@ -448,12 +467,42 @@
   </div>
 </div>
 
+<div id="inviteModal" class="modal">
+  <div class="modal-box">
+    <h3>대화 상대 초대</h3>
+    <div class="friend-select-list" id="invite-friend-list"></div>
+    <button class="modal-btn bg-y" onclick="submitInvite()">초대하기</button>
+    <button class="modal-btn bg-g" onclick="closeModal('inviteModal')">닫기</button>
+  </div>
+</div>
+
 <div id="chatMenuModal" class="modal">
   <div class="modal-box">
-    <h3 id="menu-room-name">채팅방 설정</h3>
-    <button class="modal-btn bg-g" onclick="openLeaveRoomConfirm()">채팅방 나가기 (나만)</button>
-    <button class="modal-btn bg-r" id="del-room-btn" onclick="openDeleteRoomConfirm()">채팅방 삭제 (모두에게서)</button>
-    <button class="modal-btn bg-g" onclick="closeModal('chatMenuModal')">닫기</button>
+    <div class="menu-section" style="background:#f8f8f8; padding:20px;">
+       <h3 id="menu-room-name" style="margin:0; font-size:18px;"></h3>
+       <p id="menu-msg-count" style="font-size:12px; color:#666; margin:5px 0 0 0;"></p>
+    </div>
+    
+    <div style="overflow-y:auto; flex:1;">
+        <div class="menu-section">
+            <h4>대화상대</h4>
+            <div class="menu-user-list" id="menu-participants-list"></div>
+            <div class="invite-btn-area">
+                <button class="invite-btn" onclick="openInviteModal()">+ 대화상대 초대</button>
+            </div>
+        </div>
+        
+        <div class="menu-section">
+            <h4>사진</h4>
+            <div class="menu-media-grid" id="menu-media-grid"></div>
+        </div>
+    </div>
+    
+    <div style="padding:15px; border-top:1px solid #eee;">
+       <button class="modal-btn bg-g" onclick="openLeaveRoomConfirm()">나가기</button>
+       <button class="modal-btn bg-r" id="del-room-btn" onclick="openDeleteRoomConfirm()" style="display:none; margin-top:8px;">채팅방 삭제 (모두에게)</button>
+       <button class="modal-btn bg-g" onclick="closeModal('chatMenuModal')" style="margin-top:8px;">닫기</button>
+    </div>
   </div>
 </div>
 
@@ -517,6 +566,7 @@
   let viewingImgId = null; 
   let viewingImgUrl = null; 
   let isInitialLoad = true;
+  let currentRoomCreator = null; 
 
   let cropImg = new Image();
   let cropScale = 1;
@@ -596,7 +646,7 @@
       }
     });
     
-    // 입력창 이벤트 리스너 수정 (한글 입력 버그 해결 및 keydown 처리)
+    // 입력창 이벤트 리스너 수정 (한글 입력 버그 해결)
     const msgInput = document.getElementById("msg-input");
     const micIcon = document.getElementById("mic-icon");
     const sendBtn = document.getElementById("send-btn");
@@ -631,7 +681,7 @@
     // 뒤로가기 핸들링 (history api)
     window.onpopstate = function(event) {
         if (currentRoomId) {
-            exitRoom(true); // true means initiated by history back
+            exitRoom(true); 
         }
     };
   }
@@ -664,20 +714,50 @@
       const res = await fetch(`${API_URL}/my-rooms?name=${myName}&id=${myId}`);
       const serverRooms = await res.json();
       let changed = false;
+      
+      // 내 로컬 리스트와 서버 리스트 비교
+      // 1. 서버에 없는 방 제거 (강퇴당했거나 삭제됨)
+      const serverIds = serverRooms.map(r => r.id);
+      const initialLen = myChatRooms.length;
+      myChatRooms = myChatRooms.filter(r => serverIds.includes(r.id));
+      if(myChatRooms.length !== initialLen) changed = true;
+
       serverRooms.forEach(sr => {
         const local = myChatRooms.find(r => r.id === sr.id);
+        
+        let title = sr.title;
+        // 개인 채팅인 경우 상대방 이름으로 제목 설정
+        if(sr.type === 'private' && !title) {
+             const f = friendList.find(fr => sr.id.includes(fr.id));
+             if(f) title = f.name;
+             else title = "알 수 없음";
+        }
+        // 그룹 채팅인 경우 저장된 이름 없으면 기본값
+        if(sr.type === 'group' && !title) title = "그룹 채팅";
+
         if(!local) {
-          let title = sr.id.startsWith('private') ? sr.id.replace('private_','').replace(myId,'').replace('_','') : sr.id.replace('group_','');
-          if(sr.id.startsWith('private')) {
-            const f = friendList.find(fr => sr.id.includes(fr.id));
-            if(f) title = f.name;
+          myChatRooms.unshift({ 
+              id: sr.id, 
+              title: title, 
+              type: sr.type, 
+              lastMsg: sr.lastMsg, 
+              lastReadCount: 0, 
+              creator: sr.creator, 
+              messages_count: sr.messages_count, 
+              lastSender: sr.lastSender 
+          });
+          changed = true;
+        } else {
+          // 업데이트 체크
+          if(local.messages_count !== sr.messages_count || local.title !== title || local.creator !== sr.creator) {
+             local.messages_count = sr.messages_count; 
+             local.lastMsg = sr.lastMsg; 
+             local.lastSender = sr.lastSender;
+             local.title = title;
+             local.creator = sr.creator;
+             changed = true;
+             if(currentRoomId === sr.id) loadMsgs();
           }
-          myChatRooms.unshift({ id: sr.id, title, type: sr.id.split('_')[0], lastMsg: sr.lastMsg, lastReadCount: 0, creator: sr.creator, messages_count: sr.messages_count, lastSender: sr.lastSender });
-          changed = true;
-        } else if(local.messages_count !== sr.messages_count) {
-          local.messages_count = sr.messages_count; local.lastMsg = sr.lastMsg; local.lastSender = sr.lastSender;
-          changed = true;
-          if(currentRoomId === sr.id) loadMsgs();
         }
       });
       if(changed) { localStorage.setItem("myChatRooms", JSON.stringify(myChatRooms)); renderChatList(); }
@@ -733,14 +813,16 @@
 
     currentRoomId = id;
     
-    // URL 라우팅 (history pushState)
     history.pushState({roomId: id}, '', '/chat/' + id);
 
     document.getElementById("room-title").innerText = title;
     document.getElementById("view-chat").classList.add("open");
     
     const room = myChatRooms.find(r => r.id === id);
-    if (room) room.lastReadCount = room.messages_count || 0;
+    if (room) {
+        room.lastReadCount = room.messages_count || 0;
+        currentRoomCreator = room.creator; // 방장 정보 저장
+    }
     localStorage.setItem("myChatRooms", JSON.stringify(myChatRooms));
 
     loadMsgs();
@@ -751,13 +833,13 @@
     document.getElementById("view-chat").classList.remove("open");
     if(chatPollInterval) { clearInterval(chatPollInterval); chatPollInterval = null; }
     currentRoomId = null;
+    currentRoomCreator = null;
     
     if(!isBackHistory) {
         history.pushState({}, '', '/');
     }
 
     setTimeout(renderChatList, 300);
-    // 입력창 초기화
     document.getElementById("msg-input").value = "";
     document.getElementById("mic-icon").style.display = "flex";
     document.getElementById("send-btn").style.display = "none";
@@ -772,17 +854,30 @@
     }
     myChatRooms.forEach(room => {
       const isPrivate = room.type === 'private';
-      const iconChar = isPrivate ? (room.title ? room.title[0] : '?') : '📢';
+      let iconChar = isPrivate ? (room.title ? room.title[0] : '?') : '📢';
       let roomImg = null;
-      if(isPrivate) { const friend = friendList.find(f => room.id.includes(f.id)); if(friend && friend.profile_img) roomImg = friend.profile_img; }
+      
+      if(isPrivate) { 
+          const friend = friendList.find(f => room.id.includes(f.id)); 
+          if(friend) {
+              if(friend.profile_img) roomImg = friend.profile_img;
+          }
+      } else {
+          // 그룹 채팅이면 기본 아이콘 또는 별도 로직
+          iconChar = room.title[0];
+      }
+      
       const badge = isPrivate ? `<span class="badge-p">1:1</span>` : `<span class="badge-g">단체</span>`;
       let unreadCount = (room.messages_count || 0) - (room.lastReadCount || 0);
       if(room.lastSender === myName) unreadCount = 0; 
       const unreadHtml = unreadCount > 0 ? `<div class="unread-badge">${unreadCount}</div>` : "";
+      
       const div = document.createElement("div"); div.className = "list-item";
       div.onclick = () => enterRoom(room.id, room.title, room.type);
+      
       let imgHtml = `<div class="profile-thumb" style="background:${getColor(room.title||"")}">${iconChar}</div>`;
       if(roomImg) imgHtml = `<div class="profile-thumb" style="background-image:url(${roomImg}); background-color:transparent;"></div>`;
+      
       div.innerHTML = `${imgHtml}<div class="text-area"><div class="name">${room.title}</div><div class="desc">${badge} ${room.lastMsg || '대화 내용 없음'}</div></div>${unreadHtml}`;
       container.appendChild(div);
     });
@@ -796,25 +891,11 @@
       const serverMsgs = await res.json();
       if(initialRoomId !== currentRoomId) return;
 
-      // 버블 사라짐(깜빡임) 방지 로직:
-      // 기존 캐시에 있는 '전송 중(isSending)' 상태인 메시지들을 확인
       const currentCache = allMessagesCache[currentRoomId] || [];
       const pendingMsgs = currentCache.filter(m => m.isSending);
 
-      // 서버에서 온 메시지 목록에 없는 전송 중 메시지를 끝에 붙여 유지
-      // (서버가 아직 갱신되지 않았을 때 클라이언트측 UI 유지)
       let combinedMsgs = [...serverMsgs];
       if (pendingMsgs.length > 0) {
-         // 간단히 서버 메시지 수나 내용을 비교하거나, 
-         // 그냥 pending 상태인 것은 서버 데이터에 완전히 포함되었다고 확신하기 전까지 뒤에 붙여둠.
-         // 여기서는 서버 응답이 왔을 때 내 메시지가 포함되어 있다면 pending을 제거하는 식으로 동작해야 하지만,
-         // 가장 쉬운 방법은 서버 데이터 뒤에 pending을 붙이고, 
-         // 서버 데이터에 이미 같은 내용/시간의 메시지가 있다면 pending을 제외하는 것.
-         // 하지만 이 코드는 sendMsg에서 await fetch가 끝나면 reload하므로, 
-         // fetch가 끝나기 전의 poll에서는 pending을 유지해야 함.
-         
-         // pending 메시지 중 서버 데이터에 없는 것만 필터링 (중복 방지)
-         // (실제 프로덕션에선 ID나 UUID로 체크하지만 여기선 로직 단순화)
          const safePending = pendingMsgs.filter(p => !serverMsgs.some(s => s.msg === p.msg && s.name === p.name));
          combinedMsgs = combinedMsgs.concat(safePending);
       }
@@ -877,10 +958,7 @@
       if(m.image) {
           contentHtml = `<img src="${m.image}" class="img-msg" onclick="openImageViewer('${m.image}', '${m.id}', ${isMe})">`;
       } else {
-          // 버블 구성
           const bubble = `<div class="bubble" onclick="${isMe ? `openMsgMenu(event, '${m.id}', false)` : `openOtherMsgMenu(event, '${m.id}')`}">${linkify(m.msg)}</div>`;
-          
-          // 임베드 구성
           let previewHtml = "";
           if (m.preview) {
              previewHtml = `<a href="${m.preview.url}" target="_blank" class="link-preview">
@@ -905,7 +983,6 @@
                                 </a>`;
              }
           }
-          // 수정 요청: 임베드를 버블 아래에 배치 (bubble-wrapper flex column 사용)
           contentHtml = `<div class="bubble-wrapper">${bubble}${previewHtml}</div>`;
       }
 
@@ -924,7 +1001,6 @@
     
     const msg = input.value.trim(); if(!msg) return;
     
-    // 낙관적 UI 업데이트
     const tempId = "temp_" + Date.now();
     const tempMsg = {
         id: tempId,
@@ -939,7 +1015,6 @@
     allMessagesCache[currentRoomId].push(tempMsg);
     renderMsgs(allMessagesCache[currentRoomId]); 
     
-    // 입력창 초기화
     input.value = "";
     mic.style.display = "flex";
     btn.style.display = "none";
@@ -984,20 +1059,17 @@
     reader.readAsDataURL(file); input.value = "";
   }
 
-  /* 이미지 뷰어 관련 함수 */
   function openImageViewer(imgUrl, msgId, isMe) {
       viewingImgId = msgId;
       viewingImgUrl = imgUrl;
       const modal = document.getElementById('img-viewer-modal');
       const content = document.getElementById('img-viewer-content');
-    const deleteBtn = document.querySelector('.viewer-btn[onclick="deleteViewingImage()"]');
-    if (isMe) {
-        deleteBtn.style.display = "flex";
-    } else {
-        deleteBtn.style.display = "none";
-    }
-
-    
+      const deleteBtn = document.querySelector('.viewer-btn[onclick="deleteViewingImage()"]');
+      if (isMe) {
+          deleteBtn.style.display = "flex";
+      } else {
+          deleteBtn.style.display = "none";
+      }
       content.src = imgUrl;
       modal.style.display = 'flex';
       setTimeout(() => modal.classList.add('show'), 10);
@@ -1064,7 +1136,7 @@
       menuBtns.forEach(btn => btn.style.display = 'none');
       
       document.getElementById("copy-btn-modal").style.display = "block";
-      menuBtns[menuBtns.length-1].style.display = "block"; // 취소 버튼
+      menuBtns[menuBtns.length-1].style.display = "block"; 
       
       modal.style.display = "flex";
       let x = e.clientX; let y = e.clientY;
@@ -1108,9 +1180,66 @@
       });
   }
 
-  function openChatMenu() {
+  /* 채팅방 메뉴 관련 로직 업데이트 */
+  async function openChatMenu() {
     const room = myChatRooms.find(r => r.id === currentRoomId);
+    if(!room) return;
+
     document.getElementById("menu-room-name").innerText = room.title;
+    
+    // API로 방 정보(참여자, 미디어, 통계) 가져오기
+    try {
+        const res = await fetch(`${API_URL}/room-info?room=${currentRoomId}&id=${myId}`);
+        const data = await res.json();
+        
+        document.getElementById("menu-msg-count").innerText = `총 메시지 ${data.total_msgs}개`;
+        
+        // 참여자 목록 렌더링
+        const pList = document.getElementById("menu-participants-list");
+        pList.innerHTML = "";
+        data.participants.forEach(u => {
+            const isCreator = (u.id === data.creator_id);
+            const isMe = (u.id === myId);
+            const kickBtn = (data.is_my_room_creator && !isMe) ? `<button class="kick-btn" onclick="kickUser('${u.id}', '${u.name}')">추방</button>` : '';
+            
+            const card = document.createElement("div");
+            card.className = "menu-user-card";
+            let imgStyle = u.profile_img ? `background-image:url(${u.profile_img}); background-color:transparent;` : `background:${getColor(u.name)}`;
+            card.innerHTML = `
+                <div class="menu-user-thumb" style="${imgStyle}">${u.profile_img ? '' : u.name[0]}</div>
+                <div class="menu-user-info">
+                    <span class="menu-user-name">${u.name} ${isMe?'(나)':''}</span>
+                    ${isCreator ? '<span class="menu-user-role">방장</span>' : ''}
+                </div>
+                ${kickBtn}
+            `;
+            pList.appendChild(card);
+        });
+
+        // 미디어 그리드 렌더링
+        const mGrid = document.getElementById("menu-media-grid");
+        mGrid.innerHTML = "";
+        const maxDisplay = 8;
+        data.images.slice(0, maxDisplay).forEach(img => {
+            const d = document.createElement("img");
+            d.className = "media-thumb";
+            d.src = img.url;
+            d.onclick = () => openImageViewer(img.url, img.id, false);
+            mGrid.appendChild(d);
+        });
+        if(data.images.length > maxDisplay) {
+            const more = document.createElement("div");
+            more.className = "more-media-btn";
+            more.innerText = `더보기 (+${data.images.length - maxDisplay})`;
+            more.onclick = () => showAllImages(data.images); // 간단히 알림이나 전체보기 모달로 구현 가능 (여기선 생략)
+            mGrid.appendChild(more);
+        } else if(data.images.length === 0) {
+            mGrid.innerHTML = "<div style='grid-column:span 4; text-align:center; color:#ccc; font-size:12px; padding:10px;'>공유된 사진 없음</div>";
+        }
+
+    } catch(e) {
+        console.error(e);
+    }
     
     // 단체방이면서 내가 만든 방일 때만 삭제 버튼 표시
     if (room.type === 'group' && room.creator === myId) {
@@ -1121,10 +1250,57 @@
     
     openModal("chatMenuModal");
   }
+  
+  function kickUser(targetId, targetName) {
+      showCustomConfirm(`${targetName}님을 내보내시겠습니까?`, async () => {
+          await fetch(API_URL + "/kick-user", { 
+              method: "POST", 
+              headers: {"Content-Type":"application/json"}, 
+              body: JSON.stringify({ room: currentRoomId, target_id: targetId }) 
+          });
+          openChatMenu(); // 메뉴 새로고침
+          // 시스템 메시지 전송
+          fetch(API_URL + "/send", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ room: currentRoomId, name: "System", msg: `${targetName}님이 내보내졌습니다.` }) });
+      });
+  }
+  
+  function openInviteModal() {
+      const container = document.getElementById("invite-friend-list");
+      container.innerHTML = "";
+      friendList.forEach(f => {
+          container.innerHTML += `<div class="friend-select-item"><input type="checkbox" name="invite-check" value="${f.id}" id="inv-${f.id}"><label for="inv-${f.id}">${f.name}</label></div>`;
+      });
+      openModal("inviteModal");
+  }
+  
+  async function submitInvite() {
+      const checked = document.querySelectorAll('input[name="invite-check"]:checked');
+      if(checked.length === 0) return closeModal("inviteModal");
+      
+      const newMembers = [];
+      checked.forEach(c => newMembers.push(c.value));
+      
+      await fetch(API_URL + "/invite-user", {
+          method: "POST", headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({ room: currentRoomId, new_members: newMembers })
+      });
+      
+      closeModal("inviteModal");
+      openChatMenu(); // 리스트 갱신
+      fetch(API_URL + "/send", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ room: currentRoomId, name: "System", msg: `새로운 멤버가 초대되었습니다.` }) });
+  }
 
   function openLeaveRoomConfirm() {
       closeModal('chatMenuModal');
-      showCustomConfirm("리스트에서 이 채팅방을 없앨까요?", () => {
+      showCustomConfirm("채팅방을 나가시겠습니까?", async () => {
+          if (currentRoomId.startsWith('group_')) {
+             // 그룹방이면 참여자 목록에서 제거 요청
+             await fetch(API_URL + "/kick-user", { 
+                  method: "POST", 
+                  headers: {"Content-Type":"application/json"}, 
+                  body: JSON.stringify({ room: currentRoomId, target_id: myId }) 
+             });
+          }
           myChatRooms = myChatRooms.filter(r => r.id !== currentRoomId); 
           localStorage.setItem("myChatRooms", JSON.stringify(myChatRooms));
           exitRoom();
@@ -1143,16 +1319,39 @@
 
   function openCreateChatModal() {
     const container = document.getElementById("friend-select-container"); container.innerHTML = "";
-    friendList.forEach(f => { container.innerHTML += `<div class="friend-select-item"><input type="checkbox" name="invited-friend" value="${f.name}" id="chk-${f.id}"><label for="chk-${f.id}">${f.name}</label></div>`; });
+    friendList.forEach(f => { container.innerHTML += `<div class="friend-select-item"><input type="checkbox" name="invited-friend" value="${f.id}" data-name="${f.name}" id="chk-${f.id}"><label for="chk-${f.id}">${f.name}</label></div>`; });
     openModal("createChatModal");
   }
 
-  function createGroupChat() {
-    const name = document.getElementById("new-room-name").value.trim(); const checked = document.querySelectorAll('input[name="invited-friend"]:checked');
+  async function createGroupChat() {
+    const name = document.getElementById("new-room-name").value.trim(); 
+    const checked = document.querySelectorAll('input[name="invited-friend"]:checked');
     if(!name) return showCustomAlert("방 이름을 입력하세요");
-    let participants = [myName]; checked.forEach(c => participants.push(c.value));
-    const roomId = `group_${Date.now()}`; enterRoom(roomId, name, 'group');
-    fetch(API_URL + "/send", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ room: roomId, name: "System", msg: `${myName}님이 방을 만들었습니다.`, participants: participants }) });
+    
+    let participants = [myId];
+    let participantNames = [myName];
+    
+    checked.forEach(c => {
+        participants.push(c.value);
+        participantNames.push(c.getAttribute('data-name'));
+    });
+    
+    const roomId = `group_${Date.now()}`; 
+    
+    // 서버에 방 생성 요청 (메타데이터 저장)
+    await fetch(API_URL + "/create-room", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+            roomId: roomId,
+            roomName: name,
+            creatorId: myId,
+            participants: participants
+        })
+    });
+
+    enterRoom(roomId, name, 'group');
+    fetch(API_URL + "/send", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ room: roomId, name: "System", msg: `${myName}님이 방을 만들었습니다.` }) });
     closeModal('createChatModal');
   }
 
