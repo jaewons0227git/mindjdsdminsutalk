@@ -340,12 +340,13 @@
     .chat-header .material-symbols-outlined[onclick="exitRoom()"] { display: none; }
   }
 
-  #app-info-view {
-    animation: slideUp 0.3s ease-out;
+ @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
 }
-@keyframes slideUp {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
+
+#app-info-view {
+    animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 </style>
 
@@ -427,7 +428,8 @@
             <div class="menu-btn" onclick="openClearHistoryConfirm()"><span class="material-symbols-outlined menu-icon">delete_sweep</span><span class="menu-text">기록삭제</span></div>
             <div class="menu-btn" onclick="exportChat()"><span class="material-symbols-outlined menu-icon">download</span><span class="menu-text">내보내기</span></div>
             <div class="menu-btn" onclick="importChat()"><span class="material-symbols-outlined menu-icon">upload</span><span class="menu-text">가져오기</span></div>
-            <div class="menu-btn" onclick="openAppInfo()"><span class="material-symbols-outlined menu-icon">info</span><span class="menu-text">앱 정보</span></div>
+            <span class="material-symbols-outlined" style="font-size: 20px;">info</span>
+    <span class="menu-text" style="font-weight: bold;">앱 정보</span>
             <div class="menu-btn" onclick="logout()"><span class="material-symbols-outlined menu-icon" style="color:#d93025; background:#ffebeb;">logout</span><span class="menu-text" style="color:#d93025;">로그아웃</span></div>
           </div>
         </div>
@@ -1568,13 +1570,12 @@
     const statusArea = document.getElementById('update-status-area');
     
     view.style.display = 'flex';
-    // 초기 로드: 로딩 2초 보여주기
-    loader.style.display = 'inline-flex';
+    loader.style.display = 'inline-flex'; // 로딩 시작
     statusArea.style.display = 'none';
     
     setTimeout(() => {
         loader.style.display = 'none';
-        statusArea.style.display = 'block';
+        statusArea.style.display = 'block'; // 2초 후 텍스트+버튼 등장
     }, 2000);
 }
 
@@ -1586,36 +1587,41 @@ function checkUpdate() {
     const loader = document.getElementById('app-info-loader');
     const statusArea = document.getElementById('update-status-area');
     
-    // 버튼과 텍스트 숨기고 로딩 표시
     statusArea.style.display = 'none';
-    loader.style.display = 'inline-flex';
+    loader.style.display = 'inline-flex'; // 다시 로딩
     
-    // 2초 후 다시 텍스트와 버튼 표시
     setTimeout(() => {
         loader.style.display = 'none';
-        statusArea.style.display = 'block';
+        statusArea.style.display = 'block'; // 2초 후 복구
     }, 2000);
 }
 
 </script>
-  <div id="app-info-view" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#fff; z-index:5000; flex-direction:column; align-items:center; justify-content:space-between; padding: 60px 20px 40px 20px;">
+  <div id="app-info-view" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#fff; z-index:5000; flex-direction:column; align-items:center; justify-content:space-between; padding: 80px 20px 60px 20px;">
+    
     <div style="text-align:center; width:100%;">
-        <h2 style="margin:0; font-size:24px; color:#333;">mintalk</h2>
-        <p style="margin:5px 0 20px 0; color:#888; font-size:14px;">버전 2.354.12.28</p>
+        <h2 style="margin:0; font-size:26px; font-weight:900; letter-spacing:-1px;">mintalk</h2>
+        <p style="margin:8px 0 40px 0; color:#888; font-size:14px; letter-spacing:1px;">Version 2.354.12.28</p>
         
-        <div id="app-info-loader-container" style="height:100px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-            <div id="app-info-loader" class="ui-load-glx" style="transform: scale(2);">
-                <div class="gbx"><div class="bx"><i></i><i></i><i></i><i></i></div></div>
+        <div id="app-info-content-area" style="min-height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+            
+            <div id="app-info-loader" class="ui-load-glx" style="width:40px; height:40px;">
+                <div class="gbx">
+                    <div class="bx"><i></i><i></i><i></i><i></i></div>
+                </div>
             </div>
             
-            <div id="update-status-area" style="display:none; text-align:center;">
-                <p style="font-weight:bold; color:#0481ff; margin-bottom:15px;">최신 버전입니다</p>
-                <button class="modal-btn bg-g" style="width:auto; padding:8px 20px; font-size:12px;" onclick="checkUpdate()">업데이트 확인</button>
+            <div id="update-status-area" style="display:none; text-align:center; animation: fadeIn 0.5s;">
+                <p style="font-weight:bold; color:#0481ff; margin-bottom:20px; font-size:15px;">최신 버전입니다</p>
+                <button onclick="checkUpdate()" style="background:#f2f2f2; border:none; border-radius:50px; padding:10px 24px; font-size:13px; font-weight:bold; cursor:pointer; color:#333; display:flex; align-items:center; gap:5px; margin:0 auto;">
+                    <span class="material-symbols-outlined" style="font-size:18px;">refresh</span> 업데이트 확인
+                </button>
             </div>
         </div>
     </div>
 
-    <button class="modal-btn bg-y" style="width:80%; max-width:200px;" onclick="closeAppInfo()">닫기</button>
+    <button class="modal-btn bg-y" style="width:120px; border-radius:50px; height:45px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" onclick="closeAppInfo()">닫기</button>
+</div>
 </div>
 </body>
 </html>
