@@ -666,21 +666,31 @@
   if (myId) initApp();
 
   async function handleLogin() {
+    const idInput = document.getElementById("login-id");
+    const pwInput = document.getElementById("login-pw");
     const btnText = document.getElementById("btn-text");
     const loader = document.getElementById("btn-loader");
     const msgBox = document.getElementById("login-msg");
-    const id = document.getElementById("login-id").value;
-    const pw = document.getElementById("login-pw").value;
 
-    if(!id || !pw) return;
+    const id = idInput.value.trim();
+    const pw = pwInput.value.trim();
 
-    // 1. 버튼 상태 변경 (애니메이션 노출)
-    btnText.style.display = "none";
-    loader.classList.add("active");
+    // 1. 아이디/비번 여부 상관없이 무조건 로딩 GIF부터 표시
+    btnText.classList.add("hidden");
+    loader.classList.remove("hidden");
     msgBox.style.display = "none";
 
-    // 2. 3초 대기 후 서버 요청
+    // 2. 3초 대기 후 로직 수행
     setTimeout(async () => {
+        // 3. 3초 뒤에 입력값 검사
+        if (!id || !pw) {
+            msgBox.innerText = "아이디와 비밀번호를 입력해주세요.";
+            msgBox.style.display = "block";
+            btnText.classList.remove("hidden");
+            loader.classList.add("hidden");
+            return;
+        }
+
         try {
             const res = await fetch(API_URL + "/login", { 
                 method: "POST", 
@@ -690,23 +700,27 @@
             const data = await res.json();
             
             if(data.success) { 
-                // 로그인 성공 로직 (기존과 동일)
                 myId = data.id; 
                 myName = data.name;
+                myStatus = data.status;
+                friendList = data.friendList;
+                myProfileImg = data.profile_img || "";
                 localStorage.setItem("myId", myId);
                 localStorage.setItem("myName", myName);
+                localStorage.setItem("myStatus", myStatus);
+                localStorage.setItem("friendList", JSON.stringify(friendList));
+                localStorage.setItem("myProfileImg", myProfileImg);
                 initApp(); 
             } else { 
                 throw new Error(data.message); 
             }
         } catch(err) { 
-            // 실패 시 버튼 복구
             msgBox.innerText = err.message || "로그인 실패"; 
             msgBox.style.display = "block"; 
-            btnText.style.display = "inline"; 
-            loader.classList.remove("active"); 
+            btnText.classList.remove("hidden"); 
+            loader.classList.add("hidden"); 
         }
-    }, 3000); // 3000ms = 3초
+    }, 3000); // 3초 딜레이
 }
 
   function initApp() {
