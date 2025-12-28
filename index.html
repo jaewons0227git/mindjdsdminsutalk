@@ -339,6 +339,14 @@
     #view-chat.open ~ #pc-placeholder { display: none; }
     .chat-header .material-symbols-outlined[onclick="exitRoom()"] { display: none; }
   }
+
+  #app-info-view {
+    animation: slideUp 0.3s ease-out;
+}
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
 </style>
 
 </head>
@@ -401,7 +409,7 @@
           <div class="my-info-card">
             <div class="profile-thumb" id="more-profile-img" style="cursor:pointer;" onclick="openProfileEdit()">나</div>
             <div class="text-area" style="margin-left:12px;">
-              <div class="name" style="font-size:18px; margin-bottom:5px;">더보기</div>
+              <div class="name" style="font-size:18px; margin-bottom:5px;">profile</div>
               <div class="desc" id="more-email-display">user@email.com</div>
               <div class="desc" style="font-size:11px; color:#aaa; margin-top:2px;">사진을 눌러 프로필 변경</div>
             </div>
@@ -419,6 +427,7 @@
             <div class="menu-btn" onclick="openClearHistoryConfirm()"><span class="material-symbols-outlined menu-icon">delete_sweep</span><span class="menu-text">기록삭제</span></div>
             <div class="menu-btn" onclick="exportChat()"><span class="material-symbols-outlined menu-icon">download</span><span class="menu-text">내보내기</span></div>
             <div class="menu-btn" onclick="importChat()"><span class="material-symbols-outlined menu-icon">upload</span><span class="menu-text">가져오기</span></div>
+            <div class="menu-btn" onclick="openAppInfo()"><span class="material-symbols-outlined menu-icon">info</span><span class="menu-text">앱 정보</span></div>
             <div class="menu-btn" onclick="logout()"><span class="material-symbols-outlined menu-icon" style="color:#d93025; background:#ffebeb;">logout</span><span class="menu-text" style="color:#d93025;">로그아웃</span></div>
           </div>
         </div>
@@ -1553,6 +1562,60 @@
     });
   }
 
+  function openAppInfo() {
+    const view = document.getElementById('app-info-view');
+    const loader = document.getElementById('app-info-loader');
+    const statusArea = document.getElementById('update-status-area');
+    
+    view.style.display = 'flex';
+    // 초기 로드: 로딩 2초 보여주기
+    loader.style.display = 'inline-flex';
+    statusArea.style.display = 'none';
+    
+    setTimeout(() => {
+        loader.style.display = 'none';
+        statusArea.style.display = 'block';
+    }, 2000);
+}
+
+function closeAppInfo() {
+    document.getElementById('app-info-view').style.display = 'none';
+}
+
+function checkUpdate() {
+    const loader = document.getElementById('app-info-loader');
+    const statusArea = document.getElementById('update-status-area');
+    
+    // 버튼과 텍스트 숨기고 로딩 표시
+    statusArea.style.display = 'none';
+    loader.style.display = 'inline-flex';
+    
+    // 2초 후 다시 텍스트와 버튼 표시
+    setTimeout(() => {
+        loader.style.display = 'none';
+        statusArea.style.display = 'block';
+    }, 2000);
+}
+
 </script>
+  <div id="app-info-view" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#fff; z-index:5000; flex-direction:column; align-items:center; justify-content:space-between; padding: 60px 20px 40px 20px;">
+    <div style="text-align:center; width:100%;">
+        <h2 style="margin:0; font-size:24px; color:#333;">mintalk</h2>
+        <p style="margin:5px 0 20px 0; color:#888; font-size:14px;">버전 2.354.12.28</p>
+        
+        <div id="app-info-loader-container" style="height:100px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+            <div id="app-info-loader" class="ui-load-glx" style="transform: scale(2);">
+                <div class="gbx"><div class="bx"><i></i><i></i><i></i><i></i></div></div>
+            </div>
+            
+            <div id="update-status-area" style="display:none; text-align:center;">
+                <p style="font-weight:bold; color:#0481ff; margin-bottom:15px;">최신 버전입니다</p>
+                <button class="modal-btn bg-g" style="width:auto; padding:8px 20px; font-size:12px;" onclick="checkUpdate()">업데이트 확인</button>
+            </div>
+        </div>
+    </div>
+
+    <button class="modal-btn bg-y" style="width:80%; max-width:200px;" onclick="closeAppInfo()">닫기</button>
+</div>
 </body>
 </html>
