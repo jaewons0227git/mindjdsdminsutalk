@@ -106,7 +106,7 @@
   .me .msg-content { align-items: flex-end; }
   .other .msg-content { align-items: flex-start; }
 
-  /* 말풍선 스타일 변경 (요청사항 반영) */
+  /* 말풍선 스타일 변경 */
   .bubble { padding: 10px 14px; font-size: 15px; word-break: break-all; white-space: pre-wrap; width: fit-content; line-height: 1.4; position: relative; text-align: left; }
   /* 상대방: 회색 배경, 둥근 모서리 */
   .other .bubble { background: #f0f0f0; color: #000; border-radius: 20px; border-top-left-radius: 4px; }
@@ -117,11 +117,13 @@
   .me .bubble a { color: #fff; text-decoration: underline; }
   .bubble a:hover { text-decoration: underline; }
 
-  .link-preview { display: block; margin-top: 8px; background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0,0,0,0.1); max-width: 240px; text-decoration: none; color: inherit !important; cursor: pointer; }
+  /* 임베드 스타일 수정 */
+  .link-preview { display: block; margin-top: 8px; background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid rgba(0,0,0,0.1); width: 100%; max-width: 240px; text-decoration: none; color: inherit !important; cursor: pointer; }
   .link-preview img { width: 100%; height: 120px; object-fit: cover; display: block; }
-  .preview-txt { padding: 10px; }
-  .preview-title { font-weight: bold; font-size: 13px; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #000; }
+  .preview-txt { padding: 10px; background: #f9f9f9; }
+  .preview-title { font-weight: bold; font-size: 13px; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #000; }
   .preview-desc { font-size: 11px; color: #666; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .preview-url { font-size: 10px; color: #999; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   .read-container { display: flex; align-items: flex-end; }
   .me .read-container { flex-direction: row-reverse; }
@@ -129,11 +131,14 @@
   .me .read-count { color: #3b82f6; } 
   .msg-time { font-size: 10px; color: #999; margin: 0 4px; min-width: max-content; }
 
+  /* 전송 중 로딩 애니메이션 (말풍선 옆) */
+  .sending-spinner { width: 12px; height: 12px; border: 2px solid #ccc; border-bottom-color: transparent; border-radius: 50%; animation: rotation 1s linear infinite; margin: 0 4px; }
+
   /* 이미지 모서리 둥글게 (20px) */
   .img-msg { max-width: 200px; border-radius: 20px; margin-top: 5px; display: block; cursor: pointer; }
   .edit-tag { font-size: 9px; color: rgba(0,0,0,0.4); margin-top: 2px; }
 
-  /* 입력창 영역 스타일 재정의 (요청사항 반영) */
+  /* 입력창 영역 스타일 재정의 */
   #input-area { background: #fff; padding: 9px 10px calc(9px + env(safe-area-inset-bottom)) 10px; display: flex; gap: 8px; align-items: center; position: relative; z-index: 10; min-height: 58px; }
   
   /* 플러스 버튼 */
@@ -163,8 +168,10 @@
 
   #send-btn { display: none; width: 40px; height: 40px; background: #3b82f6; border-radius: 50%; border: none; align-items: center; justify-content: center; color: #fff; cursor: pointer; }
   #send-btn:disabled { background: #ccc; cursor: default; }
+  /* 전송 아이콘 크기 확대 */
+  #send-icon { font-size: 24px !important; }
   
-  /* 모달 기본 스타일 (z-index 3000으로 올려서 이미지 뷰어보다 앞에 나오게 함, 딜레이 단축) */
+  /* 모달 기본 스타일 */
   .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 3000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.1s ease; }
   .modal.show { opacity: 1; display: flex; }
   .modal-box { background: #fff; width: 85%; max-width: 300px; padding: 20px; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
@@ -203,7 +210,7 @@
   canvas#crop-canvas { cursor: move; }
   .slider-container { margin: 15px 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
-  /* 이미지 뷰어 모달 (요청사항 반영) */
+  /* 이미지 뷰어 모달 */
   #img-viewer-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; }
   #img-viewer-modal.show { opacity: 1; display: flex; }
   #img-viewer-content { max-width: 100%; max-height: 80vh; object-fit: contain; transform: scale(1); transition: transform 0.2s; }
@@ -376,8 +383,7 @@
                 <span class="bar"></span>
             </div>
             <button id="send-btn" onclick="sendMsg()">
-                <span id="send-icon" class="material-symbols-outlined" style="font-size:18px;">arrow_upward</span>
-                <span id="send-loader" class="loader hidden" style="border-color:#fff; border-bottom-color:transparent; width:14px; height:14px; border-width:2px;"></span>
+                <span id="send-icon" class="material-symbols-outlined">arrow_upward</span>
             </button>
         </div>
       </div>
@@ -773,6 +779,7 @@
   }
 
   function formatDate(ts) {
+      if(typeof ts === 'string' && ts.startsWith('temp')) return ""; // 임시 메시지는 날짜 구분선 패스
       const date = new Date(parseFloat(ts) * 1000);
       return date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
   }
@@ -783,7 +790,7 @@
     box.innerHTML = ""; let lastDate = "";
     msgs.forEach(m => {
       const currentDate = formatDate(m.id);
-      if(currentDate !== lastDate) {
+      if(currentDate && currentDate !== lastDate) {
           const d = document.createElement("div"); d.className = "date-divider"; d.innerHTML = `<span>${currentDate}</span>`;
           box.appendChild(d); lastDate = currentDate;
       }
@@ -795,36 +802,98 @@
           if(f && f.profile_img) senderImg = `background-image:url(${f.profile_img}); background-color:transparent;`;
           else senderImg = `background-color:${getColor(m.name)}`;
       }
-      let readCountDisplay = (m.read_by && isMe && m.read_by.length < 2) ? "1" : "";
       
-      // 이미지 클릭 시 뷰어 호출 (isMe 상관없이)
-      let contentHtml = m.image 
-  ? `<img src="${m.image}" class="img-msg" onclick="openImageViewer('${m.image}', '${m.id}', ${isMe})">` 
-  : `<div class="bubble" onclick="${isMe ? `openMsgMenu(event, '${m.id}', false)` : `openOtherMsgMenu(event, '${m.id}')`}">${linkify(m.msg)}</div>`;
+      // 로딩 중 상태 (임시 ID인 경우)
+      let statusIndicator = "";
+      if (m.isSending) {
+          statusIndicator = `<div class="sending-spinner"></div>`;
+      } else {
+          let readCountDisplay = (m.read_by && isMe && m.read_by.length < 2) ? "1" : "";
+          statusIndicator = `<span class="read-count">${readCountDisplay}</span><span class="msg-time">${m.time}</span>`;
+      }
+
+      let contentHtml = "";
       
-      if(m.preview) contentHtml += `<a href="${m.preview.url}" target="_blank" class="link-preview">${m.preview.image ? `<img src="${m.preview.image}">` : ''}<div class="preview-txt"><div class="preview-title">${m.preview.title}</div><div class="preview-desc">${m.preview.description}</div></div></a>`;
+      if(m.image) {
+          contentHtml = `<img src="${m.image}" class="img-msg" onclick="openImageViewer('${m.image}', '${m.id}', ${isMe})">`;
+      } else {
+          contentHtml = `<div class="bubble" onclick="${isMe ? `openMsgMenu(event, '${m.id}', false)` : `openOtherMsgMenu(event, '${m.id}')`}">${linkify(m.msg)}</div>`;
+          
+          // 임베드 로직 수정
+          let previewHtml = "";
+          if (m.preview) {
+             previewHtml = `<a href="${m.preview.url}" target="_blank" class="link-preview">
+                              ${m.preview.image ? `<img src="${m.preview.image}">` : ''}
+                              <div class="preview-txt">
+                                <div class="preview-title">${m.preview.title}</div>
+                                <div class="preview-desc">${m.preview.description}</div>
+                                <div class="preview-url">${m.preview.url}</div>
+                              </div>
+                            </a>`;
+          } else {
+             // 폴백 임베드 생성 (URL이 있는 경우)
+             const urlMatch = m.msg.match(/(https?:\/\/[^\s]+)/g);
+             if (urlMatch && urlMatch[0]) {
+                 const url = urlMatch[0];
+                 // 타이틀은 클라이언트에서 가져올 수 없으므로 도메인이나 URL 자체를 표시
+                 let domain = url;
+                 try { domain = new URL(url).hostname; } catch(e){}
+                 previewHtml = `<a href="${url}" target="_blank" class="link-preview">
+                                  <div class="preview-txt">
+                                    <div class="preview-title">${domain}</div>
+                                    <div class="preview-url">${url}</div>
+                                  </div>
+                                </a>`;
+             }
+          }
+          if(previewHtml) contentHtml += previewHtml;
+      }
+
       if(m.edited) contentHtml += `<span class="edit-tag">수정됨</span>`;
-      div.innerHTML = `${!isMe ? `<div class="chat-profile-img" style="${senderImg}">${senderImg.includes('url')?'':m.name[0]}</div>` : ''}<div class="msg-content">${!isMe ? `<span style="font-size:11px; margin-bottom:4px; margin-left:2px; color:#666;">${m.name}</span>` : ''}<div class="read-container">${contentHtml}<div style="display:flex; flex-direction:column; justify-content:flex-end;"><span class="read-count">${readCountDisplay}</span><span class="msg-time">${m.time}</span></div></div></div>`;
+      
+      div.innerHTML = `${!isMe ? `<div class="chat-profile-img" style="${senderImg}">${senderImg.includes('url')?'':m.name[0]}</div>` : ''}<div class="msg-content">${!isMe ? `<span style="font-size:11px; margin-bottom:4px; margin-left:2px; color:#666;">${m.name}</span>` : ''}<div class="read-container">${contentHtml}<div style="display:flex; flex-direction:column; justify-content:flex-end;">${statusIndicator}</div></div></div>`;
       box.appendChild(div);
     });
-    if(isAtBottom || isInitialLoad) box.scrollTop = box.scrollHeight;
+    if(isAtBottom || isInitialLoad || msgs.some(m => m.isSending)) box.scrollTop = box.scrollHeight;
   }
 
   async function sendMsg() {
-    const input = document.getElementById("msg-input"); const btn = document.getElementById("send-btn");
-    const icon = document.getElementById("send-icon"); const loader = document.getElementById("send-loader");
+    const input = document.getElementById("msg-input");
     const mic = document.getElementById("mic-icon");
+    const btn = document.getElementById("send-btn");
     
     const msg = input.value.trim(); if(!msg) return;
-    btn.disabled = true; icon.classList.add("hidden"); loader.classList.remove("hidden");
+    
+    // 낙관적 UI 업데이트 (Optimistic UI)
+    const tempId = "temp_" + Date.now();
+    const tempMsg = {
+        id: tempId,
+        name: myName,
+        msg: msg,
+        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+        read_by: [],
+        isSending: true
+    };
+    
+    if(!allMessagesCache[currentRoomId]) allMessagesCache[currentRoomId] = [];
+    allMessagesCache[currentRoomId].push(tempMsg);
+    renderMsgs(allMessagesCache[currentRoomId]); // 즉시 렌더링
+    
+    // 입력창 초기화
+    input.value = "";
+    mic.style.display = "flex";
+    btn.style.display = "none";
+    input.focus();
+
     try {
       await fetch(API_URL + "/send", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ room: currentRoomId, name: myName, msg: msg }) });
-      input.value = ""; 
-      // 전송 후 입력창 상태 초기화 (마이크 보이기, 전송버튼 숨기기)
-      mic.style.display = "flex";
-      btn.style.display = "none";
+      // 성공 시 실제 메시지 로드 (polling 또는 즉시 로드)
       loadMsgs();
-    } finally { btn.disabled = false; icon.classList.remove("hidden"); loader.classList.add("hidden"); input.focus(); }
+    } catch(e) {
+        // 실패 시 처리 (여기선 간단히 alert)
+        alert("메시지 전송 실패");
+        loadMsgs();
+    }
   }
 
   async function sendImage(input) {
@@ -836,7 +905,10 @@
     const mic = document.getElementById("mic-icon");
     mic.style.display = "none"; btn.style.display = "flex";
 
-    btn.disabled = true; icon.classList.add("hidden"); loader.classList.remove("hidden");
+    btn.disabled = true; icon.classList.add("hidden"); 
+    // 로더 요소가 없다면(위에서 삭제했다면) 복구하지 않음. 이미지 전송은 별도 로직 유지
+    if(loader) loader.classList.remove("hidden");
+    
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
@@ -847,7 +919,8 @@
         const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
         try { await fetch(API_URL + "/send", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ room: currentRoomId, name: myName, image: compressedBase64, msg: "사진을 보냈습니다." }) }); loadMsgs(); } 
         finally { 
-            btn.disabled = false; icon.classList.remove("hidden"); loader.classList.add("hidden"); 
+            btn.disabled = false; icon.classList.remove("hidden"); 
+            if(loader) loader.classList.add("hidden"); 
             // 원복
             mic.style.display = "flex"; btn.style.display = "none";
         }
@@ -916,6 +989,11 @@
     selectedMsgId = id;
     const modal = document.getElementById("msgMenuModal");
     const box = modal.querySelector('.modal-box');
+    
+    // 숨겨졌던 버튼들을 다시 보이게 초기화 (수정/삭제 버튼 복구)
+    const menuBtns = box.querySelectorAll('.modal-btn');
+    menuBtns.forEach(btn => btn.style.display = 'block');
+
     document.getElementById("edit-btn-modal").style.display = isImage ? "none" : "block";
     document.getElementById("copy-btn-modal").style.display = "none"; // 내 메시지는 복사 버튼 숨김 (기존 유지)
     
@@ -932,8 +1010,7 @@
       const modal = document.getElementById("msgMenuModal");
       const box = modal.querySelector('.modal-box');
       
-      // 상대방 메시지: 수정/삭제 숨기고 복사/취소만 표시 (삭제도 숨기는게 일반적이나 요청에 "복사 버튼" 언급만 있어 삭제는 놔둘 수도 있으나, 보통 상대 메시지 삭제는 안됨. 여기선 복사만 보이게 처리)
-      // 기존 코드상 삭제 API는 본인 것 체크 안하면 삭제될 수도 있지만 UI상 가려줌
+      // 상대방 메시지: 수정/삭제 숨기고 복사/취소만 표시
       const menuBtns = box.querySelectorAll('.modal-btn');
       menuBtns.forEach(btn => btn.style.display = 'none');
       
@@ -1129,8 +1206,6 @@
       c.appendChild(div);
     });
   }
-
-  // 페이지 로드 시 테마 설정 불러오기
 
 </script>
 </body>
