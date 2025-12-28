@@ -39,17 +39,17 @@
   .login-btn { padding: 14px; background: #3b1e1e; color: #fff; border: none; border-radius: 50px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 15px; height: 48px; display: flex; align-items: center; justify-content: center; }
   /* 로그인 버튼 내 로더 스타일 */
 /* 로그인 버튼 내 로더 스타일 */
+/* 로그인 버튼 내 로더 전용 스타일 */
 .login-btn .ui-load-glx {
     width: 24px !important;
     height: 24px !important;
-    /* GIF 이미지 경로 */
     background: url('https://i.postimg.cc/FHC2gcKw/supawork-e581c010c923449a8cbeab7a31029ed5.webp') no-repeat center / contain;
-    display: none; /* 처음엔 숨김 */
+    position: relative;
 }
 
-/* 활성화 시 보여주기 */
-.login-btn .ui-load-glx.active {
-    display: inline-block;
+/* 기존 복잡한 애니메이션 자식 요소들은 무시됨 */
+.login-btn .ui-load-glx * {
+    display: none !important;
 }
   .login-error { color: #d93025; font-size: 12px; text-align: center; margin-top: 10px; display: none; }
   
@@ -362,8 +362,8 @@
     <img src="https://i.postimg.cc/FHC2gcKw/supawork-e581c010c923449a8cbeab7a31029ed5.webp" style="display:none;">
 
 <button class="login-btn" onclick="handleLogin()">
-    <span id="btn-text">로그인</span>
-    <div id="btn-loader" class="ui-load-glx"></div>
+  <span id="btn-text">로그인</span>
+  <div id="btn-loader" class="ui-load-glx hidden"></div>
 </button>
     <div id="login-msg" class="login-error"></div>
   </div>
