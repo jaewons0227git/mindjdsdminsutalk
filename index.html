@@ -37,6 +37,14 @@
   .login-form { width: 80%; max-width: 280px; display: flex; flex-direction: column; gap: 10px; }
   .login-input { padding: 14px 20px; border: 1px solid #ddd; border-radius: 25px; font-size: 14px; outline: none; background: #fff; }
   .login-btn { padding: 14px; background: #3b1e1e; color: #fff; border: none; border-radius: 50px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 15px; height: 48px; display: flex; align-items: center; justify-content: center; }
+  /* 로그인 버튼 내 로더 스타일 */
+.login-btn .ui-load-glx {
+    width: 24px !important;
+    height: 24px !important;
+    background: url('https://i.postimg.cc/FHC2gcKw/supawork-e581c010c923449a8cbeab7a31029ed5.webp') no-repeat center / contain;
+    /* animation 부분을 완전히 삭제하여 GIF 본연의 속도대로 나오게 합니다 */
+    position: relative;
+}
   .login-error { color: #d93025; font-size: 12px; text-align: center; margin-top: 10px; display: none; }
   
   /* Galaxy Loader CSS Start */
@@ -346,9 +354,9 @@
     <input id="login-id" class="login-input" placeholder="아이디" autocomplete="off" lang="ko">
     <input id="login-pw" type="password" class="login-input" placeholder="비밀번호">
     <button class="login-btn" onclick="handleLogin()">
-      <span id="btn-text">로그인</span>
-      <div id="btn-loader" class="ui-load-glx hidden" style="width:20px; height:20px;"><div class="gbx" style="transform: scale(0.8);"><div class="bx"><i></i><i></i><i></i><i></i></div></div></div>
-    </button>
+    <span id="btn-text">로그인</span>
+    <div id="btn-loader" class="ui-load-glx hidden"></div>
+</button>
     <div id="login-msg" class="login-error"></div>
   </div>
 </div>
