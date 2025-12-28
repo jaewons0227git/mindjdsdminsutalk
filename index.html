@@ -1566,18 +1566,18 @@
     });
   }
 
-  function openAppInfo() {
+ function openAppInfo() {
     const view = document.getElementById('app-info-view');
-    const loader = document.getElementById('app-info-loader');
+    const gif = document.getElementById('app-info-gif');
     const statusArea = document.getElementById('update-status-area');
     
     view.style.display = 'flex';
-    loader.style.display = 'inline-flex'; // 로딩 시작
+    gif.style.display = 'block'; // GIF 보이기
     statusArea.style.display = 'none';
     
     setTimeout(() => {
-        loader.style.display = 'none';
-        statusArea.style.display = 'block'; // 2초 후 텍스트+버튼 등장
+        gif.style.display = 'none';
+        statusArea.style.display = 'block'; 
     }, 2000);
 }
 
@@ -1586,15 +1586,15 @@ function closeAppInfo() {
 }
 
 function checkUpdate() {
-    const loader = document.getElementById('app-info-loader');
+    const gif = document.getElementById('app-info-gif');
     const statusArea = document.getElementById('update-status-area');
     
     statusArea.style.display = 'none';
-    loader.style.display = 'inline-flex'; // 다시 로딩
+    gif.style.display = 'block'; // 다시 GIF 보이기
     
     setTimeout(() => {
-        loader.style.display = 'none';
-        statusArea.style.display = 'block'; // 2초 후 복구
+        gif.style.display = 'none';
+        statusArea.style.display = 'block';
     }, 2000);
 }
 
@@ -1606,14 +1606,10 @@ function checkUpdate() {
         <p style="margin:8px 0 40px 0; color:#888; font-size:14px; letter-spacing:1px;">Version 2.354.12.28</p>
         
         <div id="app-info-content-area" style="min-height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+            <img id="app-info-gif" src="https://i.postimg.cc/FHC2gcKw/supawork-e581c010c923449a8cbeab7a31029ed5.webp" 
+                 style="width:40px; height:40px; display:none;">
             
-            <div id="app-info-loader" class="ui-load-glx" style="width:40px; height:40px;">
-                <div class="gbx">
-                    <div class="bx"><i></i><i></i><i></i><i></i></div>
-                </div>
-            </div>
-            
-            <div id="update-status-area" style="display:none; text-align:center; animation: fadeIn 0.5s;">
+            <div id="update-status-area" style="display:none; text-align:center;">
                 <p style="font-weight:bold; color:#0481ff; margin-bottom:20px; font-size:15px;">최신 버전입니다</p>
                 <button onclick="checkUpdate()" style="background:#f2f2f2; border:none; border-radius:50px; padding:10px 24px; font-size:13px; font-weight:bold; cursor:pointer; color:#333; display:flex; align-items:center; gap:5px; margin:0 auto;">
                     <span class="material-symbols-outlined" style="font-size:18px;">refresh</span> 업데이트 확인
@@ -1622,7 +1618,8 @@ function checkUpdate() {
         </div>
     </div>
 
-    <button class="modal-btn bg-y" style="width:120px; border-radius:50px; height:45px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" onclick="closeAppInfo()">닫기</button>
+    <button class="modal-btn bg-y" style="width:120px; border-radius:50px; height:45px;" onclick="closeAppInfo()">닫기</button>
+</div>
 </div>
 </div>
 </body>
