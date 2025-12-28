@@ -135,13 +135,14 @@
   
   #main-layout { display: flex; width: 100%; height: 100%; padding: 0; background: #fff; }
   
-  #left-side { width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; border-right: 1px solid #eee; }
+  #left-side { width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; border-right: 1px solid #eee; background-color: #f0f0f3; /* 배경색 변경 */ }
   
-  .home-header { height: 52px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; font-size: 20px; font-weight: 700; }
+  .home-header { height: 52px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; font-size: 20px; font-weight: 700; background: #fff; }
   .header-icons { display: flex; gap: 18px; }
   .icon { font-family: 'Material Symbols Outlined'; font-size: 26px; font-weight: 300; cursor: pointer; }
   
-  .tab-content { width: 100%; height: calc(100% - 52px - 58px); overflow-y: auto; overflow-x: hidden; padding-bottom: env(safe-area-inset-bottom); touch-action: pan-y; }
+  /* tab-content 높이 조정: 하단 바가 떠있으므로 여백 추가 필요 */
+  .tab-content { width: 100%; height: 100%; flex:1; overflow-y: auto; overflow-x: hidden; padding-bottom: 110px; touch-action: pan-y; background: #fff; }
   .list-item { display: flex; align-items: center; padding: 12px 16px; cursor: pointer; position: relative; }
   
   .profile-thumb { width: 44px; height: 44px; border-radius: 16px; background-color: #eee; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 600; color: rgba(0,0,0,0.5); font-size: 14px; margin-right: 12px; background-size: cover; background-position: center; border: 1px solid rgba(0,0,0,0.05); }
@@ -159,24 +160,78 @@
   .menu-text { font-size: 12px; }
   .my-info-card { display: flex; align-items: center; padding: 20px 16px; }
 
-  .bottom-nav { height: calc(58px + env(safe-area-inset-bottom)); border-top: 1px solid #f1f1f1; display: flex; align-items: flex-start; justify-content: space-around; background: #fff; padding-top: 10px; padding-bottom: env(safe-area-inset-bottom); position: absolute; bottom: 0; width: 100%; z-index: 100; }
-  .nav-item { display: flex; flex-direction: column; align-items: center; color: #bbb; cursor: pointer; width: 100%; transition: color 0.2s; }
-  .nav-item.active { color: #333; }
-  
+  /* ===== [NEW] Bouncy White Segmented Control Style ===== */
+  .nav-pill-box {
+      position: absolute; /* Chat View에 가려지도록 absolute 사용 (z-index 150) */
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 310px;
+      height: 62px;
+      background-color: #ffffff;
+      border-radius: 100px;
+      display: flex;
+      padding: 6px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+      z-index: 150; /* Chat view(200)보다 낮게 */
+      box-sizing: border-box;
+  }
+
+  .nav-indicator {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      width: calc((100% - 12px) / 3);
+      height: calc(100% - 12px);
+      background-color: #f2f2f7;
+      border-radius: 100px;
+      z-index: 1;
+      transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .nav-item {
+      flex: 1;
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #bcbcbc;
+      transition: color 0.3s ease;
+      -webkit-tap-highlight-color: transparent;
+  }
+
+  .nav-item.active {
+      color: #3a3a3c;
+  }
+
+  /* Custom Image Icons Logic Updated for New Nav */
   .nav-icon-custom {
       width: 24px; height: 24px;
-      background-color: #bbb;
+      background-color: #bcbcbc; /* Inactive color */
       -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;
       mask-size: contain; mask-repeat: no-repeat; mask-position: center;
-      transition: background-color 0.2s;
+      transition: background-color 0.3s ease;
   }
+  
   .nav-item.active .nav-icon-custom { 
-      background-color: #333; 
+      background-color: #3a3a3c; /* Active color */
       animation: elastic-tab 0.4s ease-out forwards;
   }
+  
   .nav-item.active .material-symbols-outlined {
       animation: elastic-tab 0.4s ease-out forwards;
   }
+  
+  .nav-label {
+      font-size: 10px;
+      font-weight: 800;
+      margin-top: 2px;
+      letter-spacing: 0.5px;
+  }
+  /* ====================================================== */
   
   /* 채팅 화면 */
   #view-chat { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #fff; z-index: 200; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), visibility 0s 0.3s; visibility: hidden; }
@@ -443,15 +498,23 @@
           </div>
         </div>
 
-        <div class="bottom-nav">
-          <div class="nav-item active" onclick="switchTab('friends', this)">
+        <div class="nav-pill-box">
+          <div class="nav-indicator" id="nav-indicator"></div>
+
+          <div class="nav-item active" onclick="switchTab('friends', this, 0)">
              <div class="nav-icon-custom" style="-webkit-mask-image: url('https://i.postimg.cc/kGSthK3Y/user.png'); mask-image: url('https://i.postimg.cc/kGSthK3Y/user.png');"></div>
+             <span class="nav-label">친구</span>
           </div>
-          <div class="nav-item" onclick="switchTab('chats', this)">
+          <div class="nav-item" onclick="switchTab('chats', this, 1)">
              <div class="nav-icon-custom" style="-webkit-mask-image: url('https://i.postimg.cc/X7hwLjRr/image-removebg-preview-(1).png'); mask-image: url('https://i.postimg.cc/X7hwLjRr/image-removebg-preview-(1).png');"></div>
+             <span class="nav-label">채팅</span>
           </div>
-          <div class="nav-item" onclick="switchTab('more', this)"><span class="material-symbols-outlined" style="font-size:28px;">more_horiz</span></div>
+          <div class="nav-item" onclick="switchTab('more', this, 2)">
+              <span class="material-symbols-outlined" style="font-size:24px;">more_horiz</span>
+              <span class="nav-label">더보기</span>
+          </div>
         </div>
+
       </div>
     </div>
 
@@ -895,9 +958,18 @@
 
   function logout() { localStorage.clear(); location.reload(); }
 
-  function switchTab(tab, el) {
+  function switchTab(tab, el, index) {
+    // 1. Move Indicator
+    const indicator = document.getElementById('nav-indicator');
+    if (indicator) {
+        indicator.style.transform = `translateX(${index * 100}%)`;
+    }
+
+    // 2. Active Class Toggle
     document.querySelectorAll(".nav-item").forEach(e => e.classList.remove("active"));
     el.classList.add("active");
+
+    // 3. View Switching (Original Logic)
     document.querySelectorAll(".tab-content").forEach(e => e.classList.add("hidden"));
     document.getElementById(`tab-${tab}`).classList.remove("hidden");
     const titles = { friends: "친구", chats: "채팅", more: "더보기" };
@@ -1610,7 +1682,7 @@ function checkUpdate() {
     
     <div style="text-align:center; width:100%;">
         <h2 style="margin:0; font-size:26px; font-weight:900; letter-spacing:-1px;">mintalk</h2>
-        <p style="margin:8px 0 40px 0; color:#888; font-size:14px; letter-spacing:1px;">Version 2.354.12.28</p>
+        <p style="margin:8px 0 40px 0; color:#888; font-size:14px; letter-spacing:1px;">Version 3.355.12.28</p>
         
         <div id="app-info-content-area" style="min-height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
             <img id="app-info-gif" src="https://i.postimg.cc/CxFRfRPN/supawork-2eee2d5094a0469bb11a9df39df70dd1.webp" 
