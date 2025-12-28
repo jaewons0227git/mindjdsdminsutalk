@@ -12,7 +12,7 @@
   /* ===== 기존 스타일 유지 및 업데이트 ===== */
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   /* 한글 입력 오류 수정: touch-action 및 user-select 명시적 설정 */
-  input, textarea { touch-action: manipulation !important; -webkit-user-select: text; user-select: text; }
+  input, textarea { touch-action: auto !important; -webkit-user-select: text !important; user-select: text !important; }
   html, body { margin: 0; padding: 0; width: 100%; height: 100vh; height: 100dvh; overflow: hidden; position: fixed; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; background-color: #fff; font-size: 13px; color: #000; }
   .hidden { display: none !important; }
 
@@ -35,10 +35,21 @@
   .loader { width: 20px; height: 20px; border: 3px solid #fff; border-bottom-color: transparent; border-radius: 50%; animation: rotation 1s linear infinite; }
   @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+  /* 쫀득한 애니메이션 정의 */
+  @keyframes elastic-pop { 
+      0% { transform: scale(0.9); } 
+      40% { transform: scale(1.05); } 
+      100% { transform: scale(1); } 
+  }
+  @keyframes elastic-tab {
+      0% { transform: scale(1); }
+      30% { transform: scale(0.8); }
+      60% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+  }
+
   #screen-container { width: 100%; height: 100%; position: relative; overflow: hidden; display: none; }
   
-  /* 모바일 여백 추가 */
-  /* padding: 0 10px; 부분을 0으로 변경 */
 #main-layout { display: flex; width: 100%; height: 100%; padding: 0; background: #fff; }
   
   #left-side { width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; border-right: 1px solid #eee; }
@@ -66,10 +77,10 @@
   .my-info-card { display: flex; align-items: center; padding: 20px 16px; }
 
   .bottom-nav { height: calc(58px + env(safe-area-inset-bottom)); border-top: 1px solid #f1f1f1; display: flex; align-items: flex-start; justify-content: space-around; background: #fff; padding-top: 10px; padding-bottom: env(safe-area-inset-bottom); position: absolute; bottom: 0; width: 100%; z-index: 100; }
-  .nav-item { display: flex; flex-direction: column; align-items: center; color: #bbb; cursor: pointer; width: 100%; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; color: #bbb; cursor: pointer; width: 100%; transition: color 0.2s; }
   .nav-item.active { color: #333; }
   
-  /* 하단 탭 아이콘 스타일 (이미지 마스킹) */
+  /* 하단 탭 아이콘 스타일 (쫀득한 애니메이션 적용) */
   .nav-icon-custom {
       width: 24px; height: 24px;
       background-color: #bbb;
@@ -77,11 +88,17 @@
       mask-size: contain; mask-repeat: no-repeat; mask-position: center;
       transition: background-color 0.2s;
   }
-  .nav-item.active .nav-icon-custom { background-color: #333; }
+  .nav-item.active .nav-icon-custom { 
+      background-color: #333; 
+      animation: elastic-tab 0.4s ease-out forwards;
+  }
+  .nav-item.active .material-symbols-outlined {
+      animation: elastic-tab 0.4s ease-out forwards;
+  }
   
-  /* 채팅 화면 배경 흰색으로 변경 */
-  #view-chat { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #fff; z-index: 200; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), visibility 0s 0.3s; visibility: hidden; }
-  #view-chat.open { transform: translateX(0); visibility: visible; transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), visibility 0s 0s; }
+  /* 채팅 화면 */
+  #view-chat { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #fff; z-index: 200; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), visibility 0s 0.3s; visibility: hidden; }
+  #view-chat.open { transform: translateX(0); visibility: visible; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), visibility 0s 0s; }
   
   #chat-loading-overlay { position: absolute; top: 50px; left: 0; width: 100%; bottom: calc(58px + env(safe-area-inset-bottom)); background: #fff; display: none; align-items: center; justify-content: center; z-index: 150; }
   .chat-loader { width: 35px; height: 35px; border: 4px solid rgba(0,0,0,0.1); border-top-color: #007bff; border-radius: 50%; animation: rotation 1s linear infinite; }
@@ -106,18 +123,23 @@
   .me .msg-content { align-items: flex-end; }
   .other .msg-content { align-items: flex-start; }
 
-  /* 말풍선 스타일 변경 */
-  .bubble { padding: 10px 14px; font-size: 15px; word-break: break-all; white-space: pre-wrap; width: fit-content; line-height: 1.4; position: relative; text-align: left; }
-  /* 상대방: 회색 배경, 둥근 모서리 */
+  /* 버블과 임베드를 감싸는 래퍼 (세로 정렬을 위해) */
+  .bubble-wrapper { display: flex; flex-direction: column; }
+  .me .bubble-wrapper { align-items: flex-end; }
+  .other .bubble-wrapper { align-items: flex-start; }
+
+  /* 말풍선 스타일 */
+  .bubble { padding: 10px 14px; font-size: 15px; word-break: break-all; white-space: pre-wrap; width: fit-content; line-height: 1.4; position: relative; text-align: left; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  /* 상대방 */
   .other .bubble { background: #f0f0f0; color: #000; border-radius: 20px; border-top-left-radius: 4px; }
-  /* 나: 파란색 배경, 흰색 글씨, 둥근 모서리 */
+  /* 나 */
   .me .bubble { background: #3b82f6; color: #fff; border-radius: 20px; border-top-right-radius: 4px; cursor: pointer; }
   
   .bubble a { color: #007bff; text-decoration: none; cursor: pointer; }
   .me .bubble a { color: #fff; text-decoration: underline; }
   .bubble a:hover { text-decoration: underline; }
 
-  /* 임베드 스타일 수정 */
+  /* 임베드 스타일 수정 (버블 아래에 위치) */
   .link-preview { display: block; margin-top: 8px; background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid rgba(0,0,0,0.1); width: 100%; max-width: 240px; text-decoration: none; color: inherit !important; cursor: pointer; }
   .link-preview img { width: 100%; height: 120px; object-fit: cover; display: block; }
   .preview-txt { padding: 10px; background: #f9f9f9; }
@@ -131,7 +153,7 @@
   .me .read-count { color: #3b82f6; } 
   .msg-time { font-size: 10px; color: #999; margin: 0 4px; min-width: max-content; }
 
-  /* 전송 중 로딩 애니메이션 (말풍선 옆) */
+  /* 전송 중 로딩 애니메이션 (버블 옆) */
   .sending-spinner { width: 12px; height: 12px; border: 2px solid #ccc; border-bottom-color: transparent; border-radius: 50%; animation: rotation 1s linear infinite; margin: 0 4px; }
 
   /* 이미지 모서리 둥글게 (20px) */
@@ -142,22 +164,22 @@
   #input-area { background: #fff; padding: 9px 10px calc(9px + env(safe-area-inset-bottom)) 10px; display: flex; gap: 8px; align-items: center; position: relative; z-index: 10; min-height: 58px; }
   
   /* 플러스 버튼 */
-  #plus-btn { width: 40px; height: 40px; background: #f8f8f8; color: #555; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  #plus-btn { width: 40px; height: 40px; background: #f8f8f8; color: #555; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: transform 0.1s; }
+  #plus-btn:active { transform: scale(0.9); }
   
-  /* 플러스 메뉴 (카메라/갤러리) */
-  #plus-menu { position: absolute; bottom: 60px; left: 10px; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); padding: 10px; display: none; flex-direction: column; gap: 10px; z-index: 100; min-width: 120px; }
+  /* 플러스 메뉴 */
+  #plus-menu { position: absolute; bottom: 60px; left: 10px; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); padding: 10px; display: none; flex-direction: column; gap: 10px; z-index: 100; min-width: 120px; animation: elastic-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); transform-origin: bottom left; }
   #plus-menu.show { display: flex; }
   .plus-menu-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; cursor: pointer; color: #333; font-size: 14px; }
   .plus-menu-item:hover { background: #f5f5f5; }
 
-  /* 메시지 입력 박스 (높이 32px로 플러스 버튼과 동일하게 맞춤) */
+  /* 메시지 입력 박스 수정 */
   #msg-input-container { flex: 1; background: #f4f4f4; border-radius: 30px; display: flex; align-items: center; padding: 0 15px; height: 40px; }
-  #msg-input { flex: 1; background: transparent; border: none; outline: none; font-size: 15px; padding: 0; color: #000; height: 100%; margin: 0; }
+  #msg-input { flex: 1; background: transparent; border: none; outline: none; font-size: 15px; padding: 0; color: #000; height: 100%; margin: 0; min-width: 0; }
   
   /* 녹음/전송 버튼 영역 */
   #action-btn-area { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; }
   
-  /* 녹음 아이콘 (세로 막대 스타일) */
   #mic-icon { display: flex; align-items: center; justify-content: center; gap: 2px; height: 100%; }
   .bar { width: 3px; background-color: #555; border-radius: 2px; }
   .bar:nth-child(1) { height: 8px; }
@@ -166,15 +188,15 @@
   .bar:nth-child(4) { height: 14px; }
   .bar:nth-child(5) { height: 6px; }
 
-  #send-btn { display: none; width: 40px; height: 40px; background: #3b82f6; border-radius: 50%; border: none; align-items: center; justify-content: center; color: #fff; cursor: pointer; }
-  #send-btn:disabled { background: #ccc; cursor: default; }
-  /* 전송 아이콘 크기 확대 */
+  #send-btn { display: none; width: 40px; height: 40px; background: #3b82f6; border-radius: 50%; border: none; align-items: center; justify-content: center; color: #fff; cursor: pointer; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  #send-btn:active { transform: scale(0.9); }
   #send-icon { font-size: 24px !important; }
   
-  /* 모달 기본 스타일 */
-  .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 3000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.1s ease; }
+  /* 모달 기본 스타일 (쫀득하게) */
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 3000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; }
   .modal.show { opacity: 1; display: flex; }
-  .modal-box { background: #fff; width: 85%; max-width: 300px; padding: 20px; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+  .modal-box { background: #fff; width: 85%; max-width: 300px; padding: 20px; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .modal.show .modal-box { transform: scale(1); }
   
   /* 메시지 메뉴 전용 스타일 */
   #msgMenuModal { background: transparent; pointer-events: none; opacity: 1; }
@@ -186,20 +208,15 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
     pointer-events: auto; 
     border: 1px solid #eee;
-    transform: none;
+    transform: none; /* 좌표 고정이라 transform 제거 */
     margin: 0;
+    transition: opacity 0.2s ease; /* 메뉴는 쫀득함 대신 페이드 */
   }
-  #msgMenuModal .modal-btn { 
-    width: 100%; 
-    padding: 8px; 
-    margin-top: 2px; 
-    font-size: 12px; 
-    border-radius: 4px; 
-    font-weight: normal;
-  }
+  #msgMenuModal .modal-btn { width: 100%; padding: 8px; margin-top: 2px; font-size: 12px; border-radius: 4px; font-weight: normal; }
 
-  .modal-btn { width: 100%; padding: 12px; margin-top: 8px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
-  .bg-y { background: #3b82f6; color: #fff; } /* 노란색 대신 파란색 테마 적용 */
+  .modal-btn { width: 100%; padding: 12px; margin-top: 8px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: transform 0.1s; }
+  .modal-btn:active { transform: scale(0.95); }
+  .bg-y { background: #3b82f6; color: #fff; } 
   .bg-g { background: #f2f2f2; color: #333; }
   .bg-r { background: #ff5252; color: #fff; }
 
@@ -213,11 +230,12 @@
   /* 이미지 뷰어 모달 */
   #img-viewer-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; }
   #img-viewer-modal.show { opacity: 1; display: flex; }
-  #img-viewer-content { max-width: 100%; max-height: 80vh; object-fit: contain; transform: scale(1); transition: transform 0.2s; }
+  #img-viewer-content { max-width: 100%; max-height: 80vh; object-fit: contain; transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  #img-viewer-modal.show #img-viewer-content { transform: scale(1); }
   .viewer-controls { position: absolute; bottom: 30px; display: flex; gap: 20px; z-index: 2001; }
-  .viewer-btn { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.2); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); }
+  .viewer-btn { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.2); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); transition: transform 0.1s; }
+  .viewer-btn:active { transform: scale(0.9); }
 
-  /* 복사 버튼 스타일 */
   #copy-btn-modal { display: block; }
 
   @media (min-width: 768px) {
@@ -228,10 +246,6 @@
     #view-chat.open ~ #pc-placeholder { display: none; }
     .chat-header .material-symbols-outlined[onclick="exitRoom()"] { display: none; }
   }
-
-
-
-  
 </style>
 
 </head>
@@ -371,7 +385,7 @@
         <input type="file" id="img-input-gallery" class="hidden" accept="image/*" onchange="sendImage(this)">
         
         <div id="msg-input-container">
-            <input id="msg-input" placeholder="메시지 입력" autocomplete="off" lang="ko">
+            <input id="msg-input" placeholder="메시지 입력" autocomplete="off" lang="ko" type="text">
         </div>
 
         <div id="action-btn-area">
@@ -500,8 +514,8 @@
   let chatPollInterval = null;
   let listPollInterval = null;
   let selectedMsgId = null;
-  let viewingImgId = null; // 이미지 뷰어에서 보고 있는 메시지 ID
-  let viewingImgUrl = null; // 다운로드를 위한 URL
+  let viewingImgId = null; 
+  let viewingImgUrl = null; 
   let isInitialLoad = true;
 
   let cropImg = new Image();
@@ -523,8 +537,7 @@
   function closeModal(id) {
     const el = document.getElementById(id);
     el.classList.remove("show");
-    // 딜레이를 200ms에서 100ms로 줄여서 반응성 개선
-    setTimeout(() => el.style.display = "none", 100);
+    setTimeout(() => el.style.display = "none", 200);
   }
   function showCustomAlert(msg) {
     document.getElementById("alert-message").innerText = msg;
@@ -583,7 +596,7 @@
       }
     });
     
-    // 입력창 이벤트 리스너 추가 (마이크/전송 버튼 스왑)
+    // 입력창 이벤트 리스너 수정 (한글 입력 버그 해결 및 keydown 처리)
     const msgInput = document.getElementById("msg-input");
     const micIcon = document.getElementById("mic-icon");
     const sendBtn = document.getElementById("send-btn");
@@ -598,6 +611,14 @@
         }
     });
 
+    // 엔터키 전송 (IME 조합 중엔 전송 안 함)
+    msgInput.addEventListener("keydown", function(e) {
+        if(e.key === "Enter" && !e.isComposing) {
+            e.preventDefault();
+            sendMsg();
+        }
+    });
+
     // 영역 밖 클릭시 플러스 메뉴 닫기
     window.addEventListener('click', (e) => {
         const menu = document.getElementById('plus-menu');
@@ -606,6 +627,13 @@
             menu.classList.remove('show');
         }
     });
+
+    // 뒤로가기 핸들링 (history api)
+    window.onpopstate = function(event) {
+        if (currentRoomId) {
+            exitRoom(true); // true means initiated by history back
+        }
+    };
   }
 
   /* 플러스 메뉴 기능 */
@@ -704,6 +732,10 @@
     isInitialLoad = true;
 
     currentRoomId = id;
+    
+    // URL 라우팅 (history pushState)
+    history.pushState({roomId: id}, '', '/chat/' + id);
+
     document.getElementById("room-title").innerText = title;
     document.getElementById("view-chat").classList.add("open");
     
@@ -715,10 +747,15 @@
     chatPollInterval = setInterval(loadMsgs, 1000);
   }
 
-  function exitRoom() {
+  function exitRoom(isBackHistory = false) {
     document.getElementById("view-chat").classList.remove("open");
     if(chatPollInterval) { clearInterval(chatPollInterval); chatPollInterval = null; }
     currentRoomId = null;
+    
+    if(!isBackHistory) {
+        history.pushState({}, '', '/');
+    }
+
     setTimeout(renderChatList, 300);
     // 입력창 초기화
     document.getElementById("msg-input").value = "";
@@ -756,10 +793,34 @@
     const initialRoomId = currentRoomId;
     try {
       const res = await fetch(`${API_URL}/messages?room=${currentRoomId}`);
-      const msgs = await res.json();
+      const serverMsgs = await res.json();
       if(initialRoomId !== currentRoomId) return;
-      allMessagesCache[currentRoomId] = msgs;
-      renderMsgs(msgs);
+
+      // 버블 사라짐(깜빡임) 방지 로직:
+      // 기존 캐시에 있는 '전송 중(isSending)' 상태인 메시지들을 확인
+      const currentCache = allMessagesCache[currentRoomId] || [];
+      const pendingMsgs = currentCache.filter(m => m.isSending);
+
+      // 서버에서 온 메시지 목록에 없는 전송 중 메시지를 끝에 붙여 유지
+      // (서버가 아직 갱신되지 않았을 때 클라이언트측 UI 유지)
+      let combinedMsgs = [...serverMsgs];
+      if (pendingMsgs.length > 0) {
+         // 간단히 서버 메시지 수나 내용을 비교하거나, 
+         // 그냥 pending 상태인 것은 서버 데이터에 완전히 포함되었다고 확신하기 전까지 뒤에 붙여둠.
+         // 여기서는 서버 응답이 왔을 때 내 메시지가 포함되어 있다면 pending을 제거하는 식으로 동작해야 하지만,
+         // 가장 쉬운 방법은 서버 데이터 뒤에 pending을 붙이고, 
+         // 서버 데이터에 이미 같은 내용/시간의 메시지가 있다면 pending을 제외하는 것.
+         // 하지만 이 코드는 sendMsg에서 await fetch가 끝나면 reload하므로, 
+         // fetch가 끝나기 전의 poll에서는 pending을 유지해야 함.
+         
+         // pending 메시지 중 서버 데이터에 없는 것만 필터링 (중복 방지)
+         // (실제 프로덕션에선 ID나 UUID로 체크하지만 여기선 로직 단순화)
+         const safePending = pendingMsgs.filter(p => !serverMsgs.some(s => s.msg === p.msg && s.name === p.name));
+         combinedMsgs = combinedMsgs.concat(safePending);
+      }
+      
+      allMessagesCache[currentRoomId] = combinedMsgs;
+      renderMsgs(combinedMsgs);
 
       if(isInitialLoad) {
           document.getElementById("chat-loading-overlay").style.display = "none";
@@ -769,7 +830,7 @@
 
       await fetch(`${API_URL}/mark-read`, { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ room: currentRoomId, id: myId }) });
       const room = myChatRooms.find(r => r.id === currentRoomId);
-      if(room) { room.messages_count = msgs.length; room.lastReadCount = msgs.length; }
+      if(room) { room.messages_count = serverMsgs.length; room.lastReadCount = serverMsgs.length; }
     } catch(e) {}
   }
 
@@ -779,7 +840,7 @@
   }
 
   function formatDate(ts) {
-      if(typeof ts === 'string' && ts.startsWith('temp')) return ""; // 임시 메시지는 날짜 구분선 패스
+      if(typeof ts === 'string' && ts.startsWith('temp')) return ""; 
       const date = new Date(parseFloat(ts) * 1000);
       return date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
   }
@@ -803,7 +864,6 @@
           else senderImg = `background-color:${getColor(m.name)}`;
       }
       
-      // 로딩 중 상태 (임시 ID인 경우)
       let statusIndicator = "";
       if (m.isSending) {
           statusIndicator = `<div class="sending-spinner"></div>`;
@@ -817,9 +877,10 @@
       if(m.image) {
           contentHtml = `<img src="${m.image}" class="img-msg" onclick="openImageViewer('${m.image}', '${m.id}', ${isMe})">`;
       } else {
-          contentHtml = `<div class="bubble" onclick="${isMe ? `openMsgMenu(event, '${m.id}', false)` : `openOtherMsgMenu(event, '${m.id}')`}">${linkify(m.msg)}</div>`;
+          // 버블 구성
+          const bubble = `<div class="bubble" onclick="${isMe ? `openMsgMenu(event, '${m.id}', false)` : `openOtherMsgMenu(event, '${m.id}')`}">${linkify(m.msg)}</div>`;
           
-          // 임베드 로직 수정
+          // 임베드 구성
           let previewHtml = "";
           if (m.preview) {
              previewHtml = `<a href="${m.preview.url}" target="_blank" class="link-preview">
@@ -831,11 +892,9 @@
                               </div>
                             </a>`;
           } else {
-             // 폴백 임베드 생성 (URL이 있는 경우)
              const urlMatch = m.msg.match(/(https?:\/\/[^\s]+)/g);
              if (urlMatch && urlMatch[0]) {
                  const url = urlMatch[0];
-                 // 타이틀은 클라이언트에서 가져올 수 없으므로 도메인이나 URL 자체를 표시
                  let domain = url;
                  try { domain = new URL(url).hostname; } catch(e){}
                  previewHtml = `<a href="${url}" target="_blank" class="link-preview">
@@ -846,7 +905,8 @@
                                 </a>`;
              }
           }
-          if(previewHtml) contentHtml += previewHtml;
+          // 수정 요청: 임베드를 버블 아래에 배치 (bubble-wrapper flex column 사용)
+          contentHtml = `<div class="bubble-wrapper">${bubble}${previewHtml}</div>`;
       }
 
       if(m.edited) contentHtml += `<span class="edit-tag">수정됨</span>`;
@@ -864,7 +924,7 @@
     
     const msg = input.value.trim(); if(!msg) return;
     
-    // 낙관적 UI 업데이트 (Optimistic UI)
+    // 낙관적 UI 업데이트
     const tempId = "temp_" + Date.now();
     const tempMsg = {
         id: tempId,
@@ -877,7 +937,7 @@
     
     if(!allMessagesCache[currentRoomId]) allMessagesCache[currentRoomId] = [];
     allMessagesCache[currentRoomId].push(tempMsg);
-    renderMsgs(allMessagesCache[currentRoomId]); // 즉시 렌더링
+    renderMsgs(allMessagesCache[currentRoomId]); 
     
     // 입력창 초기화
     input.value = "";
@@ -887,10 +947,8 @@
 
     try {
       await fetch(API_URL + "/send", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ room: currentRoomId, name: myName, msg: msg }) });
-      // 성공 시 실제 메시지 로드 (polling 또는 즉시 로드)
       loadMsgs();
     } catch(e) {
-        // 실패 시 처리 (여기선 간단히 alert)
         alert("메시지 전송 실패");
         loadMsgs();
     }
@@ -898,15 +956,12 @@
 
   async function sendImage(input) {
     const file = input.files[0]; if(!file) return;
-    // 로딩 표시 (플러스 버튼 대신 전송 버튼쪽 사용하거나 글로벌 로더 사용 등) - 여기서는 기존 전송버튼 로직 활용
     const btn = document.getElementById("send-btn"); const icon = document.getElementById("send-icon"); const loader = document.getElementById("send-loader");
     
-    // 강제로 전송 버튼 보여주기 (로딩 표시용)
     const mic = document.getElementById("mic-icon");
     mic.style.display = "none"; btn.style.display = "flex";
 
     btn.disabled = true; icon.classList.add("hidden"); 
-    // 로더 요소가 없다면(위에서 삭제했다면) 복구하지 않음. 이미지 전송은 별도 로직 유지
     if(loader) loader.classList.remove("hidden");
     
     const reader = new FileReader();
@@ -921,7 +976,6 @@
         finally { 
             btn.disabled = false; icon.classList.remove("hidden"); 
             if(loader) loader.classList.add("hidden"); 
-            // 원복
             mic.style.display = "flex"; btn.style.display = "none";
         }
       };
@@ -936,7 +990,6 @@
       viewingImgUrl = imgUrl;
       const modal = document.getElementById('img-viewer-modal');
       const content = document.getElementById('img-viewer-content');
-     // 삭제 버튼(휴지통 아이콘)을 찾아서 내 이미지일 때만 보이게 합니다.
     const deleteBtn = document.querySelector('.viewer-btn[onclick="deleteViewingImage()"]');
     if (isMe) {
         deleteBtn.style.display = "flex";
@@ -951,7 +1004,6 @@
   }
 
   function closeImageViewer(e) {
-      // 이미지나 컨트롤 바깥 클릭 시 닫기
       if (e.target.id === 'img-viewer-modal') {
           closeImageViewerDirect();
       }
@@ -990,12 +1042,11 @@
     const modal = document.getElementById("msgMenuModal");
     const box = modal.querySelector('.modal-box');
     
-    // 숨겨졌던 버튼들을 다시 보이게 초기화 (수정/삭제 버튼 복구)
     const menuBtns = box.querySelectorAll('.modal-btn');
     menuBtns.forEach(btn => btn.style.display = 'block');
 
     document.getElementById("edit-btn-modal").style.display = isImage ? "none" : "block";
-    document.getElementById("copy-btn-modal").style.display = "none"; // 내 메시지는 복사 버튼 숨김 (기존 유지)
+    document.getElementById("copy-btn-modal").style.display = "none";
     
     modal.style.display = "flex";
     let x = e.clientX; let y = e.clientY;
@@ -1004,13 +1055,11 @@
     box.style.left = x + "px"; box.style.top = y + "px";
   }
 
-  /* 상대방 메시지 클릭 시 메뉴 (복사 기능) */
   function openOtherMsgMenu(e, id) {
       selectedMsgId = id;
       const modal = document.getElementById("msgMenuModal");
       const box = modal.querySelector('.modal-box');
       
-      // 상대방 메시지: 수정/삭제 숨기고 복사/취소만 표시
       const menuBtns = box.querySelectorAll('.modal-btn');
       menuBtns.forEach(btn => btn.style.display = 'none');
       
@@ -1028,14 +1077,11 @@
       const roomMsgs = allMessagesCache[currentRoomId] || [];
       const target = roomMsgs.find(m => m.id === selectedMsgId);
       if(target && target.msg) {
-          navigator.clipboard.writeText(target.msg).then(() => {
-              // 복사 성공 피드백 없이 닫기 or 얼럿? 여기선 그냥 닫기
-          });
+          navigator.clipboard.writeText(target.msg).then(() => {});
       }
       closeModal('msgMenuModal');
   }
 
-  /* 수정/삭제 모달 연동 */
   function openEditModal() {
     closeModal('msgMenuModal');
     const roomMsgs = allMessagesCache[currentRoomId] || [];
@@ -1065,7 +1111,14 @@
   function openChatMenu() {
     const room = myChatRooms.find(r => r.id === currentRoomId);
     document.getElementById("menu-room-name").innerText = room.title;
-    document.getElementById("del-room-btn").style.display = (room.type === 'group') ? "block" : "none";
+    
+    // 단체방이면서 내가 만든 방일 때만 삭제 버튼 표시
+    if (room.type === 'group' && room.creator === myId) {
+        document.getElementById("del-room-btn").style.display = "block";
+    } else {
+        document.getElementById("del-room-btn").style.display = "none";
+    }
+    
     openModal("chatMenuModal");
   }
 
@@ -1165,7 +1218,6 @@
       });
   }
   
-  document.getElementById("msg-input").addEventListener("keydown", e => { if(e.key==="Enter") sendMsg(); });
   function toggleStatusEditor() { const el = document.getElementById("status-edit-area"); el.style.display = (el.style.display === "none") ? "block" : "none"; }
   async function saveStatus() {
     const ns = document.getElementById("new-status-input").value; if(!ns) return;
