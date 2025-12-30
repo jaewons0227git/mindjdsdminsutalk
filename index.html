@@ -1692,121 +1692,112 @@ function checkUpdate() {
     }, 4000);
 }
 
-  /* --- 업데이트 및 리디렉션 로직 시작 --- */
+/* --- 업데이트 관리 시스템 통합 코드 --- */
+const DEFAULT_VER = "2.354.12.28";
 
-const DEFAULT_APP_VERSION = "2.354.12.28";
-
-// 페이지 로드 시 즉시 실행
-(async function initUpdateSystem() {
-    // 1. 로컬에 버전 정보가 없으면 기본값으로 세팅
+// 1. 페이지 접속 시 자동 리디렉션 로직
+(async function checkVersionOnLoad() {
     if (!localStorage.getItem('app_version')) {
-        localStorage.setItem('app_version', DEFAULT_APP_VERSION);
+        localStorage.setItem('app_version', DEFAULT_VER);
     }
-
-    const currentVersion = localStorage.getItem('app_version');
+    const currentVer = localStorage.getItem('app_version');
 
     try {
-        // 2. 서버의 최신 버전 확인
-        const response = await fetch('update.json');
-        const data = await response.json();
-        const latestVersion = data.latestVersion;
+        const res = await fetch('update.json');
+        const data = await res.json();
+        const latestVer = data.latestVersion;
 
-        const isHomePage = window.location.pathname.includes('home.html');
-        const isIndexPage = window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/');
-
-        // 3. 리디렉션 로직
-        if (currentVersion !== latestVersion) {
-            // 구버전인데 index에 있다면 home으로 이동
-            if (isIndexPage) {
-                window.location.href = 'home.html';
-            }
+        // 구버전/신버전 경로 제어
+        if (currentVer !== latestVer) {
+            if (!window.location.pathname.includes('home.html')) window.location.href = 'home.html';
         } else {
-            // 최신버전인데 home에 있다면 index로 이동
-            if (isHomePage) {
-                window.location.href = 'index.html';
-            }
+            if (window.location.pathname.includes('home.html')) window.location.href = 'index.html';
         }
-
-        // 화면 상의 버전 텍스트를 로컬 저장소 값으로 자동 동기화
-        const versionText = document.querySelector('p[style*="letter-spacing:1px"]');
-        if (versionText) versionText.innerText = "Version " + currentVersion;
-
-    } catch (error) {
-        console.error("버전 정보를 불러오지 못했습니다:", error);
-    }
+        
+        // 화면의 버전 텍스트 자동 변경
+        const vDisplay = document.querySelector('p[style*="letter-spacing:1px"]');
+        if (vDisplay) vDisplay.innerText = "Version " + currentVer;
+    } catch (e) { console.log("버전 체크 실패"); }
 })();
 
-// 기존 checkUpdate 함수를 덮어쓰기 위해 전역 함수로 정의
-window.checkUpdate = async function() {
+// 2. [수정된 함수] 앱 정보 클릭 시 실행 (기존 openAppInfo 보강)
+const originalOpenAppInfo = window.openAppInfo; // 기존 함수 보관
+window.openAppInfo = function() {
+    if (typeof originalOpenAppInfo === 'function') originalOpenAppInfo(); // 기존 모달 여는 기능 실행
+    
     const statusArea = document.getElementById('update-status-area');
     const gif = document.getElementById('app-info-gif');
     
-    gif.style.display = 'block';
+    // 초기화: 로딩 중 표시
     statusArea.style.display = 'none';
+    gif.style.display = 'block';
 
-    try {
-        const response = await fetch('update.json');
-        const data = await response.json();
-        const latestVersion = data.latestVersion;
-        const currentVersion = localStorage.getItem('app_version');
+    // 서버에서 최신 버전 가져와서 UI 즉시 변경
+    fetch('update.json')
+        .then(res => res.json())
+        .then(data => {
+            const latestVer = data.latestVersion;
+            const currentVer = localStorage.getItem('app_version') || DEFAULT_VER;
 
-        setTimeout(() => {
+            setTimeout(() => {
+                gif.style.display = 'none';
+                statusArea.style.display = 'block';
+
+                if (currentVer !== latestVer) {
+                    // 구버전일 때: 파란색 업데이트 버튼
+                    statusArea.innerHTML = `
+                        <p style="font-weight:bold; color:#f44336; margin-bottom:20px; font-size:15px;">새로운 버전이 있습니다 (${latestVer})</p>
+                        <button onclick="startUpdate('${latestVer}')" style="background:#0481ff; color:#fff; border:none; border-radius:50px; padding:10px 24px; font-size:13px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:5px; margin:0 auto; box-shadow:0 4px 12px rgba(4,129,255,0.3);">
+                            <span class="material-symbols-outlined" style="font-size:18px;">download</span> 지금 업데이트
+                        </button>`;
+                } else {
+                    // 최신버전일 때: 기존 회색 버튼
+                    statusArea.innerHTML = `
+                        <p style="font-weight:bold; color:#0481ff; margin-bottom:20px; font-size:15px;">최신 버전입니다</p>
+                        <button onclick="checkUpdate()" style="background:#f2f2f2; border:none; border-radius:50px; padding:10px 24px; font-size:13px; font-weight:bold; cursor:pointer; color:#333; display:flex; align-items:center; gap:5px; margin:0 auto;">
+                            <span class="material-symbols-outlined" style="font-size:18px;">refresh</span> 업데이트 확인
+                        </button>`;
+                }
+            }, 500); // 0.5초 로딩 연출
+        })
+        .catch(() => {
             gif.style.display = 'none';
             statusArea.style.display = 'block';
-            
-            if (currentVersion !== latestVersion) {
-                // 업데이트가 필요한 경우: 파란색 버튼
-                statusArea.innerHTML = `
-                    <p style="font-weight:bold; color:#f44336; margin-bottom:20px; font-size:15px;">새로운 버전이 있습니다 (${latestVersion})</p>
-                    <button onclick="startUpdate('${latestVersion}')" style="background:#0481ff; color:#fff; border:none; border-radius:50px; padding:10px 24px; font-weight:bold; cursor:pointer;">지금 업데이트</button>
-                `;
-            } else {
-                // 최신 상태인 경우
-                statusArea.innerHTML = `
-                    <p style="font-weight:bold; color:#0481ff; margin-bottom:20px; font-size:15px;">최신 버전을 사용 중입니다</p>
-                    <button onclick="checkUpdate()" style="background:#f2f2f2; border:none; border-radius:50px; padding:10px 24px; color:#666; font-weight:bold; cursor:pointer;">업데이트 확인</button>
-                `;
-            }
-        }, 1500);
-    } catch (e) {
-        alert("업데이트 확인 중 오류가 발생했습니다.");
-    }
+        });
 };
 
-// 실제 업데이트 시뮬레이션 및 데이터 저장
-window.startUpdate = function(newVersion) {
+// 3. 업데이트 실행 애니메이션
+window.startUpdate = function(newVer) {
     const overlay = document.getElementById('update-progress-overlay');
     const text = document.getElementById('update-status-text');
     const bar = document.getElementById('update-loader-bar-fill');
     
     overlay.style.display = 'flex';
-    text.innerText = `mintalk을 ${newVersion}으로 업데이트 하는 중...`;
+    text.innerText = `mintalk을 ${newVer}으로 업데이트 하는 중...`;
     
     let progress = 0;
-    
-    function animate() {
-        // 0.5% ~ 3.5% 사이의 랜덤한 값으로 증가하여 실제 업데이트처럼 보임
-        progress += Math.random() * 3; 
+    const animate = () => {
+        progress += Math.random() * 2; // 랜덤 속도
         if (progress > 100) progress = 100;
-        
         bar.style.width = progress + '%';
         
         if (progress < 100) {
-            setTimeout(animate, Math.random() * 150 + 50);
+            setTimeout(animate, Math.random() * 100 + 50);
         } else {
             setTimeout(() => {
-                // 로컬 스토리지에 신규 버전 저장
-                localStorage.setItem('app_version', newVersion);
-                // 메인 페이지로 이동
+                localStorage.setItem('app_version', newVer);
                 window.location.href = 'index.html';
             }, 800);
         }
-    }
-    
+    };
     animate();
 };
 
-/* --- 업데이트 및 리디렉션 로직 끝 --- */
+// 기존 업데이트 확인 버튼을 눌러도 동일하게 작동하도록 연결
+window.checkUpdate = window.openAppInfo;
+
+
+  
 
 </script>
   <div id="app-info-view" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#fff; z-index:5000; flex-direction:column; align-items:center; justify-content:space-between; padding: 80px 20px 60px 20px;">
@@ -1820,11 +1811,7 @@ window.startUpdate = function(newVersion) {
                  style="width:39px; height:40px; display:none;">
             
             <div id="update-status-area" style="display:none; text-align:center;">
-                <p style="font-weight:bold; color:#0481ff; margin-bottom:20px; font-size:15px;">최신 버전입니다</p>
-                <button onclick="checkUpdate()" style="background:#f2f2f2; border:none; border-radius:50px; padding:10px 24px; font-size:13px; font-weight:bold; cursor:pointer; color:#333; display:flex; align-items:center; gap:5px; margin:0 auto;">
-                    <span class="material-symbols-outlined" style="font-size:18px;">refresh</span> 업데이트 확인
-                </button>
-            </div>
+    </div>
         </div>
     </div>
 
