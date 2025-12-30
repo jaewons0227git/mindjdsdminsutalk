@@ -410,21 +410,6 @@
 #app-info-view {
     animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-
-  /* 업데이트 진행 화면 스타일 */
-#update-progress-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: #fff; z-index: 9999999; display: none;
-    flex-direction: column; align-items: center; justify-content: center;
-}
-.update-loader-bar-bg {
-    width: 220px; height: 8px; background: #f0f0f0;
-    border-radius: 10px; margin-top: 25px; overflow: hidden;
-}
-#update-loader-bar-fill {
-    width: 0%; height: 100%; background: #0481ff;
-    border-radius: 10px; transition: width 0.2s ease-out;
-}
 </style>
 
 </head>
@@ -1692,108 +1677,6 @@ function checkUpdate() {
     }, 4000);
 }
 
-/* --- 단일 파일 구버전 유지 및 강제 업데이트 시스템 --- */
-const DEFAULT_VER = "2.354.12.28";
-
-(async function initAppSystem() {
-    // 1. 처음 접속 시 로컬에 버전이 없으면 현재 버전을 저장
-    if (!localStorage.getItem('app_version')) {
-        localStorage.setItem('app_version', DEFAULT_VER);
-    }
-    
-    const currentVersion = localStorage.getItem('app_version');
-
-    // 2. 버전 텍스트 동기화
-    const vDisplay = document.querySelector('p[style*="letter-spacing:1px"]');
-    if (vDisplay) vDisplay.innerText = "Version " + currentVersion;
-
-    // 3. 서버의 최신 버전 체크만 수행 (리디렉션 안함)
-    try {
-        const res = await fetch('update.json');
-        const data = await res.json();
-        const latestVersion = data.latestVersion;
-        
-        // 여기에 도달해도 화면은 바꾸지 않습니다. 사용자가 버튼을 눌러야 바뀝니다.
-        console.log("현재 버전:", currentVersion, "/ 최신 버전:", latestVersion);
-    } catch (e) {}
-})();
-
-// 앱 정보 클릭 시 실행 (기존 함수 덮어쓰기)
-window.openAppInfo = async function() {
-    // 만약 기존에 모달을 여는 openAppInfo 원본 코드가 있다면 여기서 호출
-    // document.getElementById('app-info-modal').style.display = 'block'; 
-
-    const statusArea = document.getElementById('update-status-area');
-    const gif = document.getElementById('app-info-gif');
-    
-    statusArea.style.display = 'none';
-    gif.style.display = 'block';
-
-    try {
-        const res = await fetch('update.json');
-        const data = await res.json();
-        const latestVer = data.latestVersion;
-        const currentVer = localStorage.getItem('app_version') || DEFAULT_VER;
-
-        setTimeout(() => {
-            gif.style.display = 'none';
-            statusArea.style.display = 'block';
-
-            if (currentVer !== latestVer) {
-                // 버전이 다르면 업데이트 버튼 노출
-                statusArea.innerHTML = `
-                    <p style="font-weight:bold; color:#f44336; margin-bottom:20px; font-size:15px;">새로운 버전이 있습니다 (${latestVer})</p>
-                    <button onclick="startFullUpdate('${latestVer}')" style="background:#0481ff; color:#fff; border:none; border-radius:50px; padding:10px 24px; font-size:13px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:5px; margin:0 auto; box-shadow:0 4px 12px rgba(4,129,255,0.3);">
-                        <span class="material-symbols-outlined" style="font-size:18px;">download</span> 지금 업데이트
-                    </button>`;
-            } else {
-                // 최신 버전일 때
-                statusArea.innerHTML = `
-                    <p style="font-weight:bold; color:#0481ff; margin-bottom:20px; font-size:15px;">최신 버전입니다</p>
-                    <button onclick="checkUpdate()" style="background:#f2f2f2; border:none; border-radius:50px; padding:10px 24px; font-size:13px; font-weight:bold; cursor:pointer; color:#333; display:flex; align-items:center; gap:5px; margin:0 auto;">
-                        <span class="material-symbols-outlined" style="font-size:18px;">refresh</span> 업데이트 확인
-                    </button>`;
-            }
-        }, 500);
-    } catch (e) {}
-};
-
-// 업데이트 버튼 클릭 시 실행되는 가짜 업데이트 + 로컬 저장
-window.startFullUpdate = function(newVer) {
-    const overlay = document.getElementById('update-progress-overlay');
-    const text = document.getElementById('update-status-text');
-    const bar = document.getElementById('update-loader-bar-fill');
-    
-    overlay.style.display = 'flex';
-    text.innerText = `mintalk을 ${newVer}으로 업데이트 하는 중...`;
-    
-    let progress = 0;
-    const animate = () => {
-        progress += Math.random() * 2; 
-        if (progress > 100) progress = 100;
-        bar.style.width = progress + '%';
-        
-        if (progress < 100) {
-            setTimeout(animate, Math.random() * 120 + 30);
-        } else {
-            setTimeout(() => {
-                // 1. 로컬 스토리지에 새로운 버전을 저장
-                localStorage.setItem('app_version', newVer);
-                
-                // 2. 페이지 새로고침 (이때 서버에서 최신 index.html을 새로 불러오게 됨)
-                // 브라우저 캐시를 무시하고 새로 불러오기 위해 강제 새로고침
-                location.replace(location.href);
-            }, 800);
-        }
-    };
-    animate();
-};
-
-window.checkUpdate = window.openAppInfo;
-
-
-  
-
 </script>
   <div id="app-info-view" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#fff; z-index:5000; flex-direction:column; align-items:center; justify-content:space-between; padding: 80px 20px 60px 20px;">
     
@@ -1806,26 +1689,16 @@ window.checkUpdate = window.openAppInfo;
                  style="width:39px; height:40px; display:none;">
             
             <div id="update-status-area" style="display:none; text-align:center;">
-    </div>
+                <p style="font-weight:bold; color:#0481ff; margin-bottom:20px; font-size:15px;">최신 버전입니다</p>
+                <button onclick="checkUpdate()" style="background:#f2f2f2; border:none; border-radius:50px; padding:10px 24px; font-size:13px; font-weight:bold; cursor:pointer; color:#333; display:flex; align-items:center; gap:5px; margin:0 auto;">
+                    <span class="material-symbols-outlined" style="font-size:18px;">refresh</span> 업데이트 확인
+                </button>
+            </div>
         </div>
     </div>
 
     <button class="modal-btn bg-y" style="width:120px; border-radius:50px; height:45px;" onclick="closeAppInfo()">닫기</button>
 </div>
-
-
-  <div id="update-progress-overlay">
-    <div class="ui-load-glx" style="margin-bottom: 30px;">
-        <div class="gbx" style="transform: scale(2.5);"><div class="bx"><i></i><i></i><i></i><i></i></div></div>
-    </div>
-    <p id="update-status-text" style="font-weight: bold; font-size: 16px; margin: 0; color: #333;"></p>
-    <div class="update-loader-bar-bg">
-        <div id="update-loader-bar-fill"></div>
-    </div>
-</div>
-
-
-  
 </div>
 </div>
 </body>
