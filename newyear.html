@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" sizes="32x32" href="https://i.postimg.cc/7YKGq6tt/Chat-GPT-Image-2025nyeon-12wol-25il-ohu-11-48-18-removebg-preview.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="https://i.postimg.cc/7YKGq6tt/Chat-GPT-Image-2025nyeon-12wol-25il-ohu-11-48-18-removebg-preview.png">
-    <title>mintalk</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="https://i.postimg.cc/7YKGq6tt/Chat-GPT-Image-2025nyeon-12wol-25il-ohu-11-48-18-removebg-preview.png"> 
+    <title>2026 새해 카운트다운-mintalk</title>
     <style>
         /* 영문/숫자용 폰트 (Orbitron) */
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
-        /* 요청하신 한글 폰트 적용 */
+        /* 한글 폰트 (단조) */
         @font-face {
             font-family: 'Simple';
             src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2307-1@1.1/Danjo-bold-Regular.woff2') format('woff2');
@@ -25,9 +25,8 @@
         }
 
         body {
-            background-color: #050505;
+            background-color: #000;
             color: #ffffff;
-            /* 기본 한글 폰트는 'Simple'로 설정 */
             font-family: 'Simple', sans-serif; 
             height: 100vh;
             overflow: hidden;
@@ -46,7 +45,7 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            background: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%);
+            background: #000000; 
         }
 
         .container {
@@ -55,7 +54,7 @@
             padding: 20px;
         }
 
-        /* 연도 제목 (숫자이므로 Orbitron 유지) */
+        /* 연도 (숫자) - 금빛 느낌 추가 */
         h1 {
             font-family: 'Orbitron', sans-serif;
             font-size: 5rem;
@@ -64,22 +63,22 @@
             color: #fff;
             text-shadow: 
                 0 0 10px #fff,
-                0 0 20px #fff,
-                0 0 40px #0ff,
-                0 0 80px #0ff;
+                0 0 20px #ffd700, /* 골드 */
+                0 0 40px #ffd700,
+                0 0 80px #ff8c00; /* 오렌지 골드 */
         }
 
-        /* 한글 서브 타이틀 (Simple 폰트 적용됨) */
+        /* 서브 타이틀 */
         h2 {
-            font-size: 2rem; /* 폰트가 귀여운 편이라 조금 키움 */
+            font-size: 2rem;
             margin-bottom: 50px;
             color: #ddd;
-            font-weight: normal; /* Danjo 폰트는 bold가 기본 포함이라 normal로 */
+            font-weight: normal;
             letter-spacing: 1px;
             text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
         }
 
-        /* 카운트다운 박스 영역 */
+        /* 카운트다운 박스 */
         .countdown {
             display: flex;
             flex-wrap: wrap;
@@ -92,23 +91,22 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 215, 0, 0.3); /* 테두리도 은은한 금색 */
             padding: 25px 20px;
             border-radius: 20px;
             min-width: 110px;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
             transition: transform 0.3s ease;
         }
 
         .time-box:hover {
             transform: translateY(-5px);
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
-            border-color: rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            border-color: rgba(255, 215, 0, 0.6);
         }
 
-        /* 카운트다운 숫자 (Orbitron 유지) */
         .time-box span {
             font-family: 'Orbitron', sans-serif;
             font-size: 3rem;
@@ -118,10 +116,9 @@
             text-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
         }
 
-        /* 라벨 (일, 시간, 분, 초 - Simple 폰트 적용됨) */
         .time-box .label {
             font-size: 1.1rem;
-            color: #0ff;
+            color: #ffd700; /* 라벨 색상 골드 */
             margin-top: 5px;
         }
 
@@ -138,15 +135,14 @@
         }
 
         .new-year-message h1 {
-            /* 메시지는 한글이므로 body의 Simple 폰트 상속받음 */
             font-family: 'Simple', sans-serif; 
             font-size: 4.5rem;
             line-height: 1.4;
             color: #fff;
             text-shadow: 
                 0 0 10px #fff,
-                0 0 30px #ff00de,
-                0 0 60px #ff00de;
+                0 0 30px #ffd700,
+                0 0 60px #ffd700;
             animation: float 3s ease-in-out infinite;
         }
 
@@ -155,7 +151,6 @@
             50% { transform: translateY(-20px); }
         }
 
-        /* 모바일 반응형 */
         @media (max-width: 768px) {
             h1 { font-size: 3.5rem; }
             h2 { font-size: 1.4rem; margin-bottom: 30px; }
@@ -201,13 +196,12 @@
 
     <script>
         /* ------------------------------------------------
-           카운트다운 로직
+           1. 카운트다운 로직
            ------------------------------------------------ */
         const currentYear = new Date().getFullYear();
         const nextYear = currentYear + 1;
         
         document.getElementById('yearTitle').innerText = nextYear;
-
         const newYearTime = new Date(`January 1, ${nextYear} 00:00:00`).getTime();
 
         function updateCountdown() {
@@ -240,74 +234,105 @@
         updateCountdown();
 
         /* ------------------------------------------------
-           배경 파티클 효과
+           2. 워프 스피드 배경 효과 (속도 감소, 입자 감소, 색상 변경)
            ------------------------------------------------ */
         const canvas = document.getElementById('bgCanvas');
         const ctx = canvas.getContext('2d');
         
         let width, height;
-        let particles = [];
+        let stars = [];
+        
+        // [수정됨] 설정값 조절
+        const starCount = 150;  // 입자 수 대폭 감소 (500 -> 150)
+        const speed = 4;        // 속도 대폭 감소 (20 -> 2)
+        const maxDepth = 1500; 
 
         function resize() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
+            ctx.translate(width / 2, height / 2);
         }
 
-        class Particle {
+        class Star {
             constructor() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.size = Math.random() * 2;
-                this.speedX = (Math.random() - 0.5) * 0.5;
-                this.speedY = (Math.random() - 0.5) * 0.5;
-                const colors = ['rgba(0, 255, 255, ', 'rgba(255, 0, 222, ', 'rgba(255, 255, 255, '];
-                this.colorPrefix = colors[Math.floor(Math.random() * colors.length)];
-                this.opacity = Math.random();
+                this.reset(true);
+            }
+
+            reset(initial = false) {
+                this.x = (Math.random() - 0.5) * width * 3; 
+                this.y = (Math.random() - 0.5) * height * 3;
+                this.z = initial ? Math.random() * maxDepth : maxDepth;
+                this.pz = this.z;
+                
+                // [수정됨] 흰색 ~ 노란색 사이 랜덤 생성 로직
+                // Red(255)와 Green(255)는 고정하고, Blue 값을 0~255 사이에서 랜덤으로 설정
+                // Blue가 0이면 노란색(FFFF00), 255면 흰색(FFFFFF)이 됩니다.
+                const b = Math.floor(Math.random() * 256); 
+                this.color = `rgb(255, 255, ${b})`;
             }
 
             update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                if (this.x > width) this.x = 0;
-                if (this.x < 0) this.x = width;
-                if (this.y > height) this.y = 0;
-                if (this.y < 0) this.y = height;
-                this.opacity += (Math.random() - 0.5) * 0.05;
-                if (this.opacity < 0) this.opacity = 0;
-                if (this.opacity > 1) this.opacity = 1;
+                this.z -= speed;
+                if (this.z <= 0) {
+                    this.reset();
+                }
             }
 
             draw() {
-                ctx.fillStyle = this.colorPrefix + this.opacity + ')';
+                if (this.z < speed) return;
+
+                let sx = (this.x / this.z) * 100;
+                let sy = (this.y / this.z) * 100;
+
+                let px = (this.x / this.pz) * 100;
+                let py = (this.y / this.pz) * 100;
+
+                this.pz = this.z;
+
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = this.colorPrefix + '1)';
+                ctx.strokeStyle = this.color;
+                
+                const alpha = (1 - this.z / maxDepth);
+                
+                // 속도가 느려졌으므로 선 두께를 약간 얇게 조정
+                ctx.lineWidth = Math.min(alpha * 3, 4); 
+                ctx.globalAlpha = alpha; 
+
+                ctx.moveTo(px, py);
+                ctx.lineTo(sx, sy);
+                ctx.stroke();
+                ctx.globalAlpha = 1;
             }
         }
 
-        function initParticles() {
-            particles = [];
-            const particleCount = width < 768 ? 50 : 100;
-            for (let i = 0; i < particleCount; i++) {
-                particles.push(new Particle());
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < starCount; i++) {
+                stars.push(new Star());
             }
         }
 
         function animate() {
-            ctx.clearRect(0, 0, width, height);
-            const gradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, width);
-            gradient.addColorStop(0, '#1a1a2e');
-            gradient.addColorStop(1, '#000000');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, width, height);
-            particles.forEach(p => { p.update(); p.draw(); });
+            // 잔상 효과를 위해 투명도 조정 (0.5 정도가 적당)
+            ctx.fillStyle = "rgba(0, 0, 0, 0.4)"; 
+            ctx.fillRect(-width/2, -height/2, width, height);
+
+            stars.forEach(star => {
+                star.update();
+                star.draw();
+            });
+
             requestAnimationFrame(animate);
         }
 
-        window.addEventListener('resize', () => { resize(); initParticles(); });
-        resize(); initParticles(); animate();
+        window.addEventListener('resize', () => { 
+            resize(); 
+            initStars(); 
+        });
+        
+        resize(); 
+        initStars(); 
+        animate();
     </script>
 </body>
 </html>
