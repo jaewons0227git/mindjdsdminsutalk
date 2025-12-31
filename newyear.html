@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" sizes="32x32" href="https://i.postimg.cc/7YKGq6tt/Chat-GPT-Image-2025nyeon-12wol-25il-ohu-11-48-18-removebg-preview.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="https://i.postimg.cc/7YKGq6tt/Chat-GPT-Image-2025nyeon-12wol-25il-ohu-11-48-18-removebg-preview.png"> 
-    <title>2026 새해 카운트다운-mintalk</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="https://i.postimg.cc/7YKGq6tt/Chat-GPT-Image-2025nyeon-12wol-25il-ohu-11-48-18-removebg-preview.png">
+    <title>2026 새해 카운트다운</title>
     <style>
-        /* 영문/숫자용 폰트 (Orbitron) */
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
-
-        /* 한글 폰트 (단조) */
         @font-face {
             font-family: 'Simple';
             src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2307-1@1.1/Danjo-bold-Regular.woff2') format('woff2');
@@ -18,11 +15,7 @@
             font-display: swap;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             background-color: #000;
@@ -37,180 +30,139 @@
             position: relative;
         }
 
-        /* 배경 캔버스 */
+        /* 1. 배경용 캔버스 (별 워프 효과) - 맨 뒤 */
         #bgCanvas {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: #000000; 
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -2; /* 가장 뒤 */
+            background: #000;
         }
 
-        .container {
-            text-align: center;
-            z-index: 1;
-            padding: 20px;
+        /* 2. 폭죽용 캔버스 - 별 앞, 글자 뒤 */
+        #fireworkCanvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; 
+            pointer-events: none; /* 클릭 통과 */
+            display: none; /* 처음엔 숨김 */
         }
 
-        /* 연도 (숫자) - 금빛 느낌 추가 */
-        h1 {
+        .container { text-align: center; z-index: 10; padding: 20px; }
+
+        h1#yearTitle {
             font-family: 'Orbitron', sans-serif;
             font-size: 5rem;
             margin-bottom: 20px;
             font-weight: 900;
             color: #fff;
-            text-shadow: 
-                0 0 10px #fff,
-                0 0 20px #ffd700, /* 골드 */
-                0 0 40px #ffd700,
-                0 0 80px #ff8c00; /* 오렌지 골드 */
+            text-shadow: 0 0 10px #fff, 0 0 20px #ffd700, 0 0 40px #ff8c00;
         }
 
-        /* 서브 타이틀 */
         h2 {
-            font-size: 2rem;
-            margin-bottom: 50px;
-            color: #ddd;
-            font-weight: normal;
-            letter-spacing: 1px;
+            font-size: 2rem; margin-bottom: 50px; color: #ddd;
+            font-weight: normal; letter-spacing: 1px;
             text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
         }
 
-        /* 카운트다운 박스 */
-        .countdown {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-        }
-
+        .countdown { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
         .time-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 215, 0, 0.3); /* 테두리도 은은한 금색 */
-            padding: 25px 20px;
-            border-radius: 20px;
-            min-width: 110px;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
-            transition: transform 0.3s ease;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 215, 0, 0.3); padding: 25px 20px; border-radius: 20px;
+            min-width: 110px; box-shadow: 0 0 20px rgba(255, 215, 0, 0.1); transition: transform 0.3s ease;
         }
+        .time-box:hover { transform: translateY(-5px); box-shadow: 0 0 30px rgba(255, 215, 0, 0.3); border-color: rgba(255, 215, 0, 0.6); }
+        .time-box span { font-family: 'Orbitron', sans-serif; font-size: 3rem; font-weight: 700; color: #fff; margin-bottom: 5px; text-shadow: 0 0 15px rgba(255, 255, 255, 0.6); }
+        .time-box .label { font-size: 1.1rem; color: #ffd700; margin-top: 5px; }
 
-        .time-box:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
-            border-color: rgba(255, 215, 0, 0.6);
-        }
-
-        .time-box span {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 3rem;
-            font-weight: 700;
-            color: #fff;
-            margin-bottom: 5px;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
-        }
-
-        .time-box .label {
-            font-size: 1.1rem;
-            color: #ffd700; /* 라벨 색상 골드 */
-            margin-top: 5px;
-        }
-
-        /* 새해 메시지 */
+        /* 완료 메시지 */
         .new-year-message {
             display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
+            position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            text-align: center;
-            width: 100%;
-            z-index: 10;
+            text-align: center; width: 100%;
+            z-index: 20; /* 가장 앞 */
         }
 
-        .new-year-message h1 {
-            font-family: 'Simple', sans-serif; 
-            font-size: 4.5rem;
-            line-height: 1.4;
-            color: #fff;
-            text-shadow: 
-                0 0 10px #fff,
-                0 0 30px #ffd700,
-                0 0 60px #ffd700;
-            animation: float 3s ease-in-out infinite;
+        .gradient-text {
+            font-family: 'Simple', sans-serif; font-size: 5rem; line-height: 1.3; font-weight: bold;
+            background: linear-gradient(to bottom right, #ffffff, #ffd700, #ff8c00, #ff00de);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent; color: transparent;
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
+            animation: popUp 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
-        }
+        @keyframes popUp { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
         @media (max-width: 768px) {
-            h1 { font-size: 3.5rem; }
+            h1#yearTitle { font-size: 3.5rem; }
             h2 { font-size: 1.4rem; margin-bottom: 30px; }
             .countdown { gap: 10px; }
             .time-box { min-width: 75px; padding: 15px 10px; }
             .time-box span { font-size: 2rem; }
             .time-box .label { font-size: 0.9rem; }
-            .new-year-message h1 { font-size: 2.8rem; }
+            .gradient-text { font-size: 2.8rem; }
         }
     </style>
 </head>
 <body>
 
     <canvas id="bgCanvas"></canvas>
+    <canvas id="fireworkCanvas"></canvas>
 
     <div class="container" id="countdownContainer">
         <h1 id="yearTitle">2026</h1>
         <h2>새해 카운트다운</h2>
-        
         <div class="countdown">
-            <div class="time-box">
-                <span id="days">00</span>
-                <div class="label">일</div>
-            </div>
-            <div class="time-box">
-                <span id="hours">00</span>
-                <div class="label">시간</div>
-            </div>
-            <div class="time-box">
-                <span id="minutes">00</span>
-                <div class="label">분</div>
-            </div>
-            <div class="time-box">
-                <span id="seconds">00</span>
-                <div class="label">초</div>
-            </div>
+            <div class="time-box"><span id="days">00</span><div class="label">일</div></div>
+            <div class="time-box"><span id="hours">00</span><div class="label">시간</div></div>
+            <div class="time-box"><span id="minutes">00</span><div class="label">분</div></div>
+            <div class="time-box"><span id="seconds">00</span><div class="label">초</div></div>
         </div>
     </div>
 
     <div class="new-year-message" id="successMessage">
-        <h1>새해 복<br>많이 받으세요!</h1>
+        <h1 class="gradient-text">2026년<br>새해 복<br>많이 받으세요!</h1>
     </div>
 
     <script>
-        /* ------------------------------------------------
-           1. 카운트다운 로직
-           ------------------------------------------------ */
+        /* ============================================================
+           [설정] 테스트 모드 스위치
+           ============================================================ */
+        const isTestMode = false; // true: 5초 뒤 폭죽, false: 실제 날짜
+        /* ============================================================ */
+
         const currentYear = new Date().getFullYear();
         const nextYear = currentYear + 1;
-        
         document.getElementById('yearTitle').innerText = nextYear;
-        const newYearTime = new Date(`January 1, ${nextYear} 00:00:00`).getTime();
+
+        let newYearTime;
+        if (isTestMode) {
+            newYearTime = new Date().getTime() + 5000; 
+        } else {
+            newYearTime = new Date(`January 1, ${nextYear} 00:00:00`).getTime();
+        }
 
         function updateCountdown() {
             const now = new Date().getTime();
             const gap = newYearTime - now;
 
             if (gap <= 0) {
+                // 카운트다운 종료 시 실행
                 document.getElementById('countdownContainer').style.display = 'none';
                 document.getElementById('successMessage').style.display = 'block';
+                
+                // 1. 별 속도 증가
+                if(starSpeed < 20) starSpeed = 20; 
+                
+                // 2. 폭죽 시작 (캔버스 보이기 & 애니메이션 시작)
+                const fwCanvas = document.getElementById('fireworkCanvas');
+                if (fwCanvas.style.display !== 'block') {
+                    fwCanvas.style.display = 'block';
+                    resizeFireworks(); // 크기 맞춤
+                    loopFireworks();   // 폭죽 루프 시작
+                }
                 return;
             }
 
@@ -233,106 +185,244 @@
         setInterval(updateCountdown, 1000);
         updateCountdown();
 
+
         /* ------------------------------------------------
-           2. 워프 스피드 배경 효과 (속도 감소, 입자 감소, 색상 변경)
+           PART 1. 워프 스피드 배경 (bgCanvas)
            ------------------------------------------------ */
-        const canvas = document.getElementById('bgCanvas');
-        const ctx = canvas.getContext('2d');
+        const bgCanvas = document.getElementById('bgCanvas');
+        const bgCtx = bgCanvas.getContext('2d');
         
-        let width, height;
+        let bgWidth, bgHeight;
         let stars = [];
-        
-        // [수정됨] 설정값 조절
-        const starCount = 150;  // 입자 수 대폭 감소 (500 -> 150)
-        const speed = 4;        // 속도 대폭 감소 (20 -> 2)
+        const starCount = 150; 
+        let starSpeed = 3; // 변수명 변경 (speed -> starSpeed)
         const maxDepth = 1500; 
 
-        function resize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            ctx.translate(width / 2, height / 2);
+        function resizeBg() {
+            bgWidth = bgCanvas.width = window.innerWidth;
+            bgHeight = bgCanvas.height = window.innerHeight;
+            bgCtx.translate(bgWidth / 2, bgHeight / 2);
         }
 
         class Star {
-            constructor() {
-                this.reset(true);
-            }
-
+            constructor() { this.reset(true); }
             reset(initial = false) {
-                this.x = (Math.random() - 0.5) * width * 3; 
-                this.y = (Math.random() - 0.5) * height * 3;
+                this.x = (Math.random() - 0.5) * bgWidth * 3; 
+                this.y = (Math.random() - 0.5) * bgHeight * 3;
                 this.z = initial ? Math.random() * maxDepth : maxDepth;
                 this.pz = this.z;
-                
-                // [수정됨] 흰색 ~ 노란색 사이 랜덤 생성 로직
-                // Red(255)와 Green(255)는 고정하고, Blue 값을 0~255 사이에서 랜덤으로 설정
-                // Blue가 0이면 노란색(FFFF00), 255면 흰색(FFFFFF)이 됩니다.
                 const b = Math.floor(Math.random() * 256); 
                 this.color = `rgb(255, 255, ${b})`;
             }
-
             update() {
-                this.z -= speed;
-                if (this.z <= 0) {
-                    this.reset();
-                }
+                this.z -= starSpeed;
+                if (this.z <= 0) this.reset();
             }
-
             draw() {
-                if (this.z < speed) return;
-
+                if (this.z < starSpeed) return;
                 let sx = (this.x / this.z) * 100;
                 let sy = (this.y / this.z) * 100;
-
                 let px = (this.x / this.pz) * 100;
                 let py = (this.y / this.pz) * 100;
-
                 this.pz = this.z;
-
-                ctx.beginPath();
-                ctx.strokeStyle = this.color;
-                
+                bgCtx.beginPath();
+                bgCtx.strokeStyle = this.color;
                 const alpha = (1 - this.z / maxDepth);
-                
-                // 속도가 느려졌으므로 선 두께를 약간 얇게 조정
-                ctx.lineWidth = Math.min(alpha * 3, 4); 
-                ctx.globalAlpha = alpha; 
-
-                ctx.moveTo(px, py);
-                ctx.lineTo(sx, sy);
-                ctx.stroke();
-                ctx.globalAlpha = 1;
+                bgCtx.lineWidth = Math.min(alpha * 3, 4); 
+                bgCtx.globalAlpha = alpha; 
+                bgCtx.moveTo(px, py);
+                bgCtx.lineTo(sx, sy);
+                bgCtx.stroke();
+                bgCtx.globalAlpha = 1;
             }
         }
 
         function initStars() {
             stars = [];
-            for (let i = 0; i < starCount; i++) {
-                stars.push(new Star());
+            for (let i = 0; i < starCount; i++) stars.push(new Star());
+        }
+
+        function animateBg() {
+            bgCtx.fillStyle = "rgba(0, 0, 0, 0.5)"; 
+            bgCtx.fillRect(-bgWidth/2, -bgHeight/2, bgWidth, bgHeight);
+            stars.forEach(star => { star.update(); star.draw(); });
+            requestAnimationFrame(animateBg);
+        }
+
+
+        /* ------------------------------------------------
+           PART 2. 폭죽 효과 (fireworkCanvas)
+           ------------------------------------------------ */
+        const fwCanvas = document.getElementById('fireworkCanvas');
+        const fwCtx = fwCanvas.getContext('2d');
+        let fwWidth, fwHeight;
+        
+        // 폭죽 리스트
+        let fireworks = [];
+        let particles = [];
+
+        function resizeFireworks() {
+            fwWidth = fwCanvas.width = window.innerWidth;
+            fwHeight = fwCanvas.height = window.innerHeight;
+        }
+
+        function random(min, max) { return Math.random() * (max - min) + min; }
+
+        // 폭죽 쏘아올리는 객체
+        class Firework {
+            constructor(sx, sy, tx, ty) {
+                this.x = sx; this.y = sy; // 시작점
+                this.sx = sx; this.sy = sy;
+                this.tx = tx; this.ty = ty; // 목표점
+                this.distanceToTarget = Math.sqrt(Math.pow(tx - sx, 2) + Math.pow(ty - sy, 2));
+                this.distanceTraveled = 0;
+                this.coordinates = [];
+                this.coordinateCount = 3;
+                while(this.coordinateCount--) {
+                    this.coordinates.push([this.x, this.y]);
+                }
+                this.angle = Math.atan2(ty - sy, tx - sx);
+                this.speed = 2;
+                this.acceleration = 1.05;
+                this.brightness = random(50, 70);
+                // 목표지점 도달 시 원형 반경
+                this.targetRadius = 1;
+            }
+
+            update(index) {
+                this.coordinates.pop();
+                this.coordinates.unshift([this.x, this.y]);
+                
+                this.speed *= this.acceleration;
+                
+                const vx = Math.cos(this.angle) * this.speed;
+                const vy = Math.sin(this.angle) * this.speed;
+                
+                this.distanceTraveled = Math.sqrt(Math.pow(this.sx - this.x, 2) + Math.pow(this.sy - this.y, 2));
+                
+                // 목표지점에 도달하면 터짐
+                if (this.distanceTraveled >= this.distanceToTarget) {
+                    createParticles(this.tx, this.ty);
+                    fireworks.splice(index, 1);
+                } else {
+                    this.x += vx;
+                    this.y += vy;
+                }
+            }
+
+            draw() {
+                fwCtx.beginPath();
+                fwCtx.moveTo(this.coordinates[this.coordinates.length - 1][0], this.coordinates[this.coordinates.length - 1][1]);
+                fwCtx.lineTo(this.x, this.y);
+                fwCtx.strokeStyle = 'hsl(' + hue + ', 100%, ' + this.brightness + '%)';
+                fwCtx.stroke();
             }
         }
 
-        function animate() {
-            // 잔상 효과를 위해 투명도 조정 (0.5 정도가 적당)
-            ctx.fillStyle = "rgba(0, 0, 0, 0.4)"; 
-            ctx.fillRect(-width/2, -height/2, width, height);
+        // 터진 후 퍼지는 입자 객체
+        class Particle {
+            constructor(x, y) {
+                this.x = x; this.y = y;
+                this.coordinates = [];
+                this.coordinateCount = 5;
+                while(this.coordinateCount--) {
+                    this.coordinates.push([this.x, this.y]);
+                }
+                this.angle = random(0, Math.PI * 2);
+                this.speed = random(1, 10);
+                this.friction = 0.95;
+                this.gravity = 1;
+                this.hue = random(hue - 50, hue + 50);
+                this.brightness = random(50, 80);
+                this.alpha = 1;
+                this.decay = random(0.015, 0.03);
+            }
 
-            stars.forEach(star => {
-                star.update();
-                star.draw();
-            });
+            update(index) {
+                this.coordinates.pop();
+                this.coordinates.unshift([this.x, this.y]);
+                this.speed *= this.friction;
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed + this.gravity;
+                this.alpha -= this.decay;
 
-            requestAnimationFrame(animate);
+                if (this.alpha <= this.decay) {
+                    particles.splice(index, 1);
+                }
+            }
+
+            draw() {
+                fwCtx.beginPath();
+                fwCtx.moveTo(this.coordinates[this.coordinates.length - 1][0], this.coordinates[this.coordinates.length - 1][1]);
+                fwCtx.lineTo(this.x, this.y);
+                fwCtx.strokeStyle = 'hsla(' + this.hue + ', 100%, ' + this.brightness + '%, ' + this.alpha + ')';
+                fwCtx.stroke();
+            }
         }
 
+        let hue = 120;
+        let timerTotal = 5; // 폭죽 빈도 (낮을수록 자주 터짐)
+        let timerTick = 0;
+
+        function createParticles(x, y) {
+            let particleCount = 50; // 한 번 터질 때 입자 수
+            while(particleCount--) {
+                particles.push(new Particle(x, y));
+            }
+        }
+
+        function loopFireworks() {
+            requestAnimationFrame(loopFireworks);
+            
+            // 색상 변화
+            hue = random(0, 360);
+
+            // 잔상 효과 (별과는 다르게 투명하게 지움)
+            fwCtx.globalCompositeOperation = 'destination-out';
+            fwCtx.fillStyle = 'rgba(0, 0, 0, 0.3)'; 
+            fwCtx.fillRect(0, 0, fwWidth, fwHeight);
+            
+            // 다시 그리기 모드
+            fwCtx.globalCompositeOperation = 'lighter';
+
+            // 폭죽 쏘아올리기 로직
+            let i = fireworks.length;
+            while(i--) {
+                fireworks[i].draw();
+                fireworks[i].update(i);
+            }
+
+            let j = particles.length;
+            while(j--) {
+                particles[j].draw();
+                particles[j].update(j);
+            }
+
+            // 자동 발사 타이머
+            if (timerTick >= timerTotal) {
+                // 화면 하단에서 랜덤한 위치로 발사
+                fireworks.push(new Firework(fwWidth / 2, fwHeight, random(0, fwWidth), random(0, fwHeight / 2)));
+                timerTick = 0;
+            } else {
+                timerTick++;
+            }
+        }
+
+
+        /* ------------------------------------------------
+           공통 실행 (Resize 등)
+           ------------------------------------------------ */
         window.addEventListener('resize', () => { 
-            resize(); 
-            initStars(); 
+            resizeBg(); 
+            initStars();
+            resizeFireworks();
         });
-        
-        resize(); 
-        initStars(); 
-        animate();
+
+        // 초기 실행
+        resizeBg();
+        initStars();
+        animateBg();
+        // 참고: loopFireworks()는 카운트다운이 0이 되면 updateCountdown 안에서 호출됨
     </script>
 </body>
 </html>
