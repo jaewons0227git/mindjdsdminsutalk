@@ -1701,5 +1701,147 @@ function checkUpdate() {
 </div>
 </div>
 </div>
+  <div id="mt-modal-overlay" class="mt-overlay">
+  <div class="mt-modal-content">
+    
+    <button class="mt-close-btn" onclick="closeMtModal()">&times;</button>
+    
+    <img src="https://i.postimg.cc/zGQRZ0Rv/Chat-GPT-Image-2025nyeon-12wol-31il-ohu-10-25-39.png" alt="새해 카운트다운" class="mt-image">
+    
+    <p class="mt-text">
+      mintalk과 이번 새해카운트다운을<br>
+      함께해보세요!
+    </p>
+    
+    <button class="mt-action-btn" onclick="goToNewYear()">
+      이동하기
+    </button>
+  </div>
+</div>
+
+<style>
+  /* 1. 오버레이: 화면 전체를 덮고 맨 앞에 위치 */
+  .mt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* 배경 어둡게 */
+    backdrop-filter: blur(3px); /* 배경 살짝 흐리게 (고급스러움) */
+    display: flex;
+    justify-content: center; /* 가로 중앙 */
+    align-items: center;     /* 세로 중앙 */
+    z-index: 999999; /* 무조건 맨 앞에 */
+    opacity: 0;
+    animation: mtFadeIn 0.3s forwards; /* 배경 페이드인 */
+  }
+
+  /* 2. 모달창: 쫀득한 애니메이션 및 둥근 모서리 */
+  .mt-modal-content {
+    background: #ffffff;
+    width: 85%;           /* 모바일 최적화: 화면의 85% 차지 */
+    max-width: 380px;     /* PC 최적화: 너무 커지지 않게 제한 */
+    padding: 30px 25px;
+    border-radius: 28px;  /* 모달 모서리 둥글게 */
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+    position: relative;
+    
+    /* 쫀득한 등장 애니메이션 (Bouncy Scale) */
+    transform: scale(0.7);
+    opacity: 0;
+    animation: mtBouncy 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation-delay: 0.1s; /* 배경보다 살짝 늦게 등장 */
+  }
+
+  /* 3. 이미지 스타일 */
+  .mt-image {
+    width: 100%;
+    height: auto;
+    border-radius: 20px; /* 이미지 모서리 둥글게 */
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+
+  /* 4. 텍스트 스타일 */
+  .mt-text {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 25px 0;
+    line-height: 1.5;
+    word-break: keep-all; /* 단어 단위 줄바꿈 */
+  }
+
+  /* 5. 버튼 스타일 */
+  .mt-action-btn {
+    width: 100%;
+    padding: 16px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: white;
+    background-color: #00c7ae; /* 민트색 */
+    border: none;
+    border-radius: 20px; /* 버튼 모서리 둥글게 */
+    cursor: pointer;
+    transition: transform 0.1s ease, background-color 0.2s;
+    box-shadow: 0 4px 15px rgba(0, 199, 174, 0.3); /* 버튼 그림자 */
+  }
+
+  .mt-action-btn:active {
+    transform: scale(0.96); /* 클릭 시 살짝 눌리는 효과 */
+  }
+
+  /* 6. 닫기 버튼 (X) */
+  .mt-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #ccc;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+  .mt-close-btn:hover {
+    color: #888;
+  }
+
+  /* 애니메이션 정의 */
+  @keyframes mtFadeIn {
+    to { opacity: 1; }
+  }
+
+  @keyframes mtBouncy {
+    0% { transform: scale(0.7); opacity: 0; }
+    70% { transform: scale(1.05); opacity: 1; } /* 커졌다가 */
+    100% { transform: scale(1); opacity: 1; }  /* 제자리 */
+  }
+</style>
+
+<script>
+  function goToNewYear() {
+    window.location.href = '/newyear';
+  }
+
+  function closeMtModal() {
+    const modal = document.getElementById('mt-modal-overlay');
+    modal.style.opacity = '0';
+    setTimeout(() => {
+      modal.style.display = 'none';
+    }, 300); // 애니메이션 끝난 후 숨김
+  }
+  
+  // 배경 클릭 시 닫기 (선택사항)
+  document.getElementById('mt-modal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeMtModal();
+    }
+  });
+</script>
 </body>
 </html>
